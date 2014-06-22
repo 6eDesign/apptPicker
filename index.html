@@ -2,6 +2,13 @@
 <html>
 <head>
 	<title>apptPicker Demo</title>
+
+	<!-- mobile meta (hooray!) -->
+	<meta name="HandheldFriendly" content="True">
+	<meta name="MobileOptimized" content="320">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+	<!-- Stylesheets: -->
 	<link rel="stylesheet" type="text/css" href="./dist/css/demo.min.css">
 	<link rel="stylesheet" type="text/css" href="./dist/css/style.min.css">
 </head>
@@ -18,10 +25,11 @@
 
 	<section class="container content">
 		<div class="row">
-			<div class="fivecol first panel">
+			<div class="sixcol first panel">
 				<div>
-					<label for="timeframe">Select a Time Range: </label>
-					<input type="text" id="timeframe" class="pr" placeholder="Select A Time Range" readonly>
+					<label class="pl" for="timeframe">Select a Time Range: </label>
+					<input class="pl" type="text" id="timeframe" placeholder="Select A Time Range" readonly>
+					<div class="cf"></div>
 					<hr>
 				</div>
 				
@@ -41,18 +49,17 @@
 						data-pickerid="picker_0"
 					>
 					</div>
-				
 				</div>
 				
 				<div class="cf"></div>		
 			</div>
-			<div class="sevencol last">
+			<div class="sixcol last">
 				<h1 class="subheading">Introducting apptPicker</h1>
 				<h4>by 6eDesign.net</h4>
 				<p>
 					A brand new, lightweight, JavaScript plugin for picking time ranges in the browser. 
 				</p>
-				<img src="./dist/img/demo_img.png" style="max-width: 95%; height: auto;">
+				<img src="./dist/img/demo/demo-image1.png" style="max-width: 95%; height: auto; margin-bottom:40px;">
 			</div>
 		</div>
 
@@ -104,6 +111,7 @@ var apptPicker = apptPicker('targetDivId').on('change',function(times){
 	</section>
 	
 	<!-- JavaScripts: -->
+	<script type="text/javascript" src="./dist/js/demo.min.js"></script>
 	<script type="text/javascript" src="./dist/js/vendor.min.js"></script>
 	<script type="text/javascript" src="./dist/js/dist.min.js"></script>
 	<!-- /Javascripts -->

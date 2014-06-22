@@ -40,11 +40,9 @@ gulp.task('scripts:dist', function() {
 // 
 // VENDOR PATHS
 // 
-
 var vendor = {
   outfile: 'vendor.min.js',
   files: [
-    input + 'js/rainbow-custom.min.js',
     input + 'js/jquery.min.js',
     input + 'js/jquery.easing.min.js'
   ]
@@ -59,6 +57,26 @@ gulp.task('scripts:vendor', function() {
     .pipe(uglify())
     .pipe(concat(vendor.outfile))
     .pipe(gulp.dest(output + 'js/'));
+});
+
+//
+// Demo JS Paths
+//
+var demojs = { 
+  outfile: 'demo.min.js', 
+  files: [ 
+    input + 'js/rainbow-custom.min.js'
+  ]
+}; 
+
+//
+// Demo JS TASK
+//
+gulp.task('scripts:demo', function(){
+  return gulp.src(demojs.files) 
+    .pipe(uglify())
+    .pipe(concat(demojs.outfile))
+    .pipe(gulp.dest(output + 'js/'));   
 });
 
 // 
@@ -112,6 +130,7 @@ gulp.task('stylesheet:demo', function () {
 gulp.task('watch', function() {
   gulp.watch(dist.files, ['scripts:dist']);
   gulp.watch(vendor.files, ['scripts:vendor']);
+  gulp.watch(vendor.files, ['scripts:demo']);
   gulp.watch(css.files, ['stylesheet:dist']);
   gulp.watch(css.files, ['stylesheet:demo']);
 });
@@ -120,6 +139,6 @@ gulp.task('watch', function() {
 // TASK ALIAS'
 //
 
-gulp.task('js', ['scripts:dist', 'scripts:vendor']);
+gulp.task('js', ['scripts:dist', 'scripts:vendor', 'scripts:demo']);
 gulp.task('less', ['stylesheet:dist', 'stylesheet:demo']);
-gulp.task('uber', ['scripts:dist', 'scripts:vendor', 'stylesheet:dist', 'stylesheet:demo', 'watch']);
+gulp.task('uber', ['scripts:dist', 'scripts:vendor', 'scripts:demo', 'stylesheet:dist', 'stylesheet:demo', 'watch']);
