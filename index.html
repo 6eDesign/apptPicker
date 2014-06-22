@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>apptPicker Demo</title>
+	<link rel="stylesheet" type="text/css" href="./dist/css/demo.min.css">
+	<link rel="stylesheet" type="text/css" href="./dist/css/style.min.css">
+</head>
+<body>
+	<header class="header">
+
+	<div class="container">
+		<h1 class="brand">
+			Appointment Picker
+		</h1>
+	</div>
+		
+	</header>
+
+	<section class="container content">
+		<div class="row">
+			<div class="fivecol first panel">
+				<div>
+					<label for="timeframe">Select a Time Range: </label>
+					<input type="text" id="timeframe" class="pr" placeholder="Select A Time Range" readonly>
+					<hr>
+				</div>
+				
+				<div>
+				
+					<div
+						id="exApptPicker"
+						class="apptPicker"
+						data-start="12:00am"
+						data-end="11:45pm"
+						data-interval="60"
+						data-subinterval="180"
+						data-height="351px"
+						data-opentext="Pick an Appt Window"
+						data-inputid="timeframe" 
+						data-changetxt="false" 
+						data-pickerid="picker_0"
+					>
+					</div>
+				
+				</div>
+				
+				<div class="cf"></div>		
+			</div>
+			<div class="sevencol last">
+				<h1 class="subheading">Introducting apptPicker</h1>
+				<h4>by 6eDesign.net</h4>
+				<p>
+					A brand new, lightweight, JavaScript plugin for picking time ranges in the browser. 
+				</p>
+				<img src="./dist/img/demo_img.png" style="max-width: 95%; height: auto;">
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="twelvecol first">
+				<h3>apptPicker is...</h3>
+				<hr>
+				<p>Customizeable, lightweight, and unique.</p>
+
+				<h3>Using apptPicker</h3>
+				<p>apptPicker can be embedded directly into the DOM with <strong>HTML</strong>: </p>
+				<pre style="width: 97%;">
+					<code data-language="html">
+<!-- Include an Input (optional): -->
+<input type="text" id="exApptPicker" readonly />
+<!-- Include a div with settings as data-attributes: -->
+<div class="apptPicker" data-start="5:00am" data-end="5:00pm" data-inputid="exApptPicker"></div>
+<!-- Include the dist.min.js apptPicker file: -->
+<script type="text/javascript" src="./dist/js/dist.min.js"></script>
+			    </code>
+		    </pre>
+			</div>
+			<div class="twelvecol first">
+				<p><strong>OR</strong> apptPickers can be created at any time (after DOM load) with JavaScript
+				<pre style="width: 97%">
+					<code data-language="javascript">
+var apptPicker = apptPicker('targetDivId').create({
+	start: '6:00am', 
+	end: '6:00pm', 
+	interval: 15, 
+	subinterval: 120
+}); 
+					</code>
+				</pre>
+
+				<p>apptPicker comes with an extensible API including 'on', 'toggleOpen', and 'getTimes':</p>
+				<pre style="width: 97%;">
+					<code data-language="javascript">
+var apptPicker = apptPicker('targetDivId').on('change',function(times){
+	console.log(times); 
+});					
+					</code>
+				</pre>
+			</div>
+			<div class="cf"></div>
+		</div>
+		
+	
+	</section>
+	
+	<!-- JavaScripts: -->
+	<script type="text/javascript" src="./dist/js/vendor.min.js"></script>
+	<script type="text/javascript" src="./dist/js/dist.min.js"></script>
+	<!-- /Javascripts -->
+
+</body>
+</html>
+
+
+
+
+
+	

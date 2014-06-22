@@ -1,0 +1,25 @@
+{
+  "name": "apptPicker",
+  "version": "0.0.0",
+  "description": "apptPicker\r ==========",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/6eDesign/apptPicker.git"
+  },
+  "author": "",
+  "license": "BSD-2-Clause",
+  "bugs": {
+    "url": "https://github.com/6eDesign/apptPicker/issues"
+  },
+  "devDependencies": {
+    "gulp-concat": "~2.2.0",
+    "gulp-uglify": "~0.3.1",
+    "gulp-minify-css": "~0.3.5",
+    "gulp": "~3.8.1",
+    "gulp-less": "~1.2.3"
+  }
+}

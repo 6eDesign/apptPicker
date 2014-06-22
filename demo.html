@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>apptPicker Demo</title>
+	<link rel="stylesheet" type="text/css" href="./dist/css/demo.min.css">
+	<link rel="stylesheet" type="text/css" href="./dist/css/style.min.css">
+</head>
+<body>
+	<header class="header">
+
+	<div class="container">
+		<h1 class="brand">
+			Appointment Picker
+		</h1>
+	</div>
+		
+	</header>
+
+	<section class="container content">
+
+		<div>
+			<label for="timeframe">Selected Time: </label>
+			<input type="text" id="timeframe" readonly>
+			<hr>
+		</div>
+	
+		<div>
+	
+			<div
+				id="exApptPicker"
+				class="apptPicker"
+				data-start="12:00am"
+				data-end="11:45pm"
+				data-interval="60"
+				data-subinterval="180"
+				data-height="351px"
+				data-opentext="Pick an Appt Window"
+				data-inputid="timeframe" 
+				data-changetxt="false" 
+				data-pickerid="picker_0"
+			>
+			</div>
+	
+		</div>
+	
+		<div class="cf"></div>
+	
+	</section>
+
+	<script type="text/javascript" src="./dist/js/vendor.min.js"></script>
+	<script type="text/javascript" src="./dist/js/dist.min.js"></script>
+</body>
+</html>
+
+
+
+
+
+	

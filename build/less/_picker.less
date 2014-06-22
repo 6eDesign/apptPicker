@@ -1,0 +1,98 @@
+.appt-picker-button { 
+  position: absolute;    
+  z-index:3;
+  padding: 8px 16px;
+  .css-gradient(@blue, darken(@blue, 10%));
+  border: none;
+  .border-radius(3px);
+  color: #fff;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+div.apptPicker, div.dynApptPicker { 
+  position: relative;
+  width: 100%;
+  height: 33px;
+  overflow: hidden;
+  margin-bottom: 20px;
+  .no-selection;
+}
+
+ul.appt-picker { 
+  position: absolute;
+  top: 38px;
+  left: 2px;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: 312px;
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  overflow-y: auto!important;
+  li { 
+    text-align: center; 
+    padding: 7px 0;
+    padding-left: 40%;
+    color: rgb(136, 136, 136);
+    font-weight: bold;
+    &:hover { 
+      background-color: rgb(238,238,238); 
+      cursor: pointer;        
+    }
+  }
+}
+
+ul.appt-picker.first { 
+  width: 100%; 
+  z-index: 2;    
+  li {
+    .css-gradient(lighten(@dark, 40%),lighten(@dark, 30%));
+    border-bottom: 1px solid darken(rgb(179, 179, 179), 40%);
+    padding: 15px 0px;
+    color: white;
+    text-shadow: -1px 0 0 rgba(0,0,0,0.2);
+    font-weight: bold;
+    &:hover { 
+      .css-gradient(lighten(@dark, 50%),lighten(@dark, 40%));
+    }
+    &.active, &:active { 
+      background: rgb(14, 61, 88); 
+    }
+  }
+}
+
+ul.appt-picker.second { 
+  li { 
+    border-bottom: 1px solid darken(rgb(243,243,243), 20%);
+    background-position: 52% 2px, center;
+    background-repeat: no-repeat;   
+    &.pick-start { 
+      border-top: @secondary-shelf-border; 
+      border-bottom: none; 
+      background-color: @secondary-shelf-bg-color; 
+      background-image: url(@secondary-shelf-background-image);
+      background-position: 98% -5%, center;
+    }
+    &.pick-middle { 
+      background-color: #FCFCFC; 
+      background-image: url(@secondary-shelf-background-image); 
+      border-color: #E6E6E6; 
+      background-repeat: repeat-y; 
+      background-position: 98% 50%, center; 
+    }
+    &.pick-end { 
+      background-color: @secondary-shelf-bg-color;  
+      border-bottom: @secondary-shelf-border;   
+      border-top: none; 
+      background-image: url(@secondary-shelf-background-image); 
+      background-position: 98% 105%,center;
+
+    }
+    &.pick-start, &.pick-middle, &.pick-end { 
+      // border-right: 5px solid @secondary-shelf-progress-border-color; 
+    }
+  }
+}
