@@ -3,7 +3,7 @@
 A lightweight JavaScript Appointment Picker for selecting time ranges.  
 
 [See a live Example on the apptPicker.js github.io Page](http://6eDesign.github.io/apptPicker/)
-![alt tag](http://6edesign.github.io/apptPicker/dist/img/demo/demo_img.png)
+![alt tag](http://6edesign.github.io/apptPicker/dist/img/demo/demo-image1.png)
 
 ## Getting Started: 
 ````html
