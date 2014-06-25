@@ -107,8 +107,7 @@ var theApptPicker = (function(w,d,c,$){
             var targetHeight = state.pickers[id].settings.minimizedheight; 
             state.pickers[id].minimized = true; 
         }
-        
-        $(state.pickers[id].el).stop(true,true).animate({ height: targetHeight }, state.pickers[id].settings.opendur, 'easeOutQuad', function(){}); 
+        state.pickers[id].el.style.height = targetHeight; 
     }; 
     
     handleBaseTimeClick = function() { 
@@ -124,7 +123,7 @@ var theApptPicker = (function(w,d,c,$){
         $(this).addClass('active');
         if(!state.pickers[id].expanded) {
             state.pickers[id].expanded = true; 
-            $(list).stop(true,true).animate({width: '40%'}, defaults.slidedur, 'easeOutExpo', function(){});     
+            list.style.width = '40%';  
         }
         
         y = $(container).find('ul.appt-picker>li[data-time="'+start+'"]')[0].offsetTop;
@@ -205,6 +204,7 @@ var theApptPicker = (function(w,d,c,$){
             } else { 
                 // we are hovering the starting time <li> : 
                 $(list.getElementsByTagName('li')).removeClass('pick-middle pick-end');
+                $(this).addClass('pick-start'); 
             }
         }
     }; 

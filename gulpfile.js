@@ -4,6 +4,7 @@ var uglify = require('gulp-uglify');
 var concat = require('gulp-concat');
 var less = require('gulp-less');
 var minifyCSS = require('gulp-minify-css');
+var livereload = require('gulp-livereload');
 var path = require('path');
 
 // 
@@ -12,6 +13,7 @@ var path = require('path');
 
 var input = 'build/';
 var output = 'dist/';
+
 
 // 
 // DIST PATHS
@@ -34,7 +36,8 @@ gulp.task('scripts:dist', function() {
   return gulp.src(dist.files)
     .pipe(uglify())
     .pipe(concat(dist.outfile))
-    .pipe(gulp.dest(output + 'js/'));
+    .pipe(gulp.dest(output + 'js/'))
+    .pipe(livereload());
 });
 
 // 
@@ -56,7 +59,8 @@ gulp.task('scripts:vendor', function() {
   return gulp.src(vendor.files)
     .pipe(uglify())
     .pipe(concat(vendor.outfile))
-    .pipe(gulp.dest(output + 'js/'));
+    .pipe(gulp.dest(output + 'js/'))
+    .pipe(livereload());
 });
 
 //
@@ -76,7 +80,8 @@ gulp.task('scripts:demo', function(){
   return gulp.src(demojs.files) 
     .pipe(uglify())
     .pipe(concat(demojs.outfile))
-    .pipe(gulp.dest(output + 'js/'));   
+    .pipe(gulp.dest(output + 'js/'))
+    .pipe(livereload());   
 });
 
 // 
@@ -98,7 +103,8 @@ gulp.task('stylesheet:dist', function () {
     .pipe(less())
     .pipe(minifyCSS())
     .pipe(concat(css.outfile))
-    .pipe(gulp.dest(output + 'css/'));
+    .pipe(gulp.dest(output + 'css/'))
+    .pipe(livereload());
 });
 
 // 
@@ -120,8 +126,19 @@ gulp.task('stylesheet:demo', function () {
     .pipe(less())
     .pipe(minifyCSS())
     .pipe(concat(demo.outfile))
-    .pipe(gulp.dest(output + 'css/'));
+    .pipe(gulp.dest(output + 'css/'))
+    .pipe(livereload());
 });
+
+//
+// HTML Task
+//
+gulp.task('html', function(){
+  return gulp.src('*.html')
+  .pipe(gulp.dest(''))
+  .pipe(livereload())
+  .pipe(notify({message: 'html task complete'})); 
+}); 
 
 //
 // WATCHER TASK
@@ -133,6 +150,7 @@ gulp.task('watch', function() {
   gulp.watch(vendor.files, ['scripts:demo']);
   gulp.watch(css.files, ['stylesheet:dist']);
   gulp.watch(css.files, ['stylesheet:demo']);
+  gulp.watch('*.html', ['html']); 
 });
 
 //
