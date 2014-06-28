@@ -1,22 +1,296 @@
 // some utilities wrapped up in bows: 
-var jDom = (function(w,d,c,$){
-    var creator, createElem, interpret, interpreter, formatPhoneNumber; 
+var jDom = (function(exports,w,d,c){
+    /* ================================================
 
-    create = function(obj) {
-        if(typeof obj=='string') { 
-            return creator(interpreter(obj)); 
-        } else { 
-            return creator(obj);
+        Our Public Functions: 
+            
+            1) UTILITY FUNCTIONS: 
+            -jDom.extend(object,object,...)
+            -jDon.trim(str,str,str,...,str)
+            -jDom.getKeys(obj) 
+                for getting Object.keys(obj)    
+                (includes a polyfill of sorts for old browsers)
+            -isArray(testObj)
+
+            2) DOM EVENTS: 
+            -jDom.ready(function)
+                enqueues loadEvents on domready
+            -jDom.trigger(context,eventType)
+            
+            3) DOM MANIPULATION/CREATION: 
+            -jDom.create(String | {})
+                create a dom node as specified via obj 
+                (load jDom.interpret for emmet.io-like interpretation)
+            
+            4) DOM GETTERS/SETTERS: 
+            -jDom.getByClassName(classes,context)
+                classes is space separated values
+                context is an element (not required) 
+            -jDom.getElementsByData(key,val,context,type);
+            -jDom.getData(elem)
+            -jDom.addClass(elem,classes) 
+                classes is space separated string
+            -jDom.removeClass(elem,classes) 
+                elem is an array of elements or a single element
+                classes is space separated string
+
+    ================================================ */
+
+    /*=========================================================
+    |   1) UTILITY FUNCTIONS:                                 |
+    ======================================================== */ 
+    exports.extend = function() { 
+        /* 
+            this extend can handle nested objects & any 
+            number of objects passed as arguments
+        */
+        return extend(arguments); 
+    }; 
+    exports.trim = function() { 
+        var results = []; 
+        for(var i=0; i < arguments.length; ++i) { 
+            results.push(trim(arguments[i])); 
         }
+        return (results.length > 1) ? results : results[0]; 
+    }; 
+    exports.getKeys = function(obj) { 
+        return getKeys(obj); 
+    }; 
+    exports.isArray = function(testObj) { 
+        if(typeof testObj == 'object') { 
+            return isObjectAnArray(testObj); 
+        } else { 
+            return false; 
+        }
+    }; 
+
+
+    /*=========================================================
+    |   2) DOM EVENTS:                                        |
+    ======================================================== */ 
+    exports.on = function(elem,eventType,func) { 
+        addEvent(elem,eventType,func); 
+        return elem; 
+    }; 
+    exports.trigger = function(context,eventType) { 
+        return trigger(context,eventType); 
+    }; 
+
+
+    /*=========================================================
+    |   3) DOM MANIPULATION/CREATION:                         |
+    ======================================================== */ 
+    exports.ready = function(func) { 
+        var oldonload = w.onload;
+        if (typeof w.onload != 'function' ) {
+            w.onload = func;
+        } else {
+            w.onload = function() {
+                oldonload();
+                func();
+            }
+        }
+    }; 
+    exports.create = function(obj) {
+        return create(obj);
     };
 
+    /*=========================================================
+    |   4) DOM GETTERS/SETTERS:                               |
+    ======================================================== */ 
+    exports.getByClassName = function(str,context) { 
+        var elems = [ ]; 
+        context = (typeof context == 'undefined') ? d : context; 
+        if(d.getElementsByClassName) { 
+            return elems = context.getElementsByClassName(str); 
+        } else { 
+            return getByClassName(str,context); 
+        }
+    }; 
+    exports.getElementsByData = function(key,val,context,type) { 
+        val = (typeof val == 'undefined') ? null : val; 
+        context = (typeof context == 'undefined') ? d : context; 
+        type = (typeof type == 'undefined') ? '*' : type; 
+        return getElementsByData(key,val,context,type); 
+    }; 
+    exports.getData = function(elem) { 
+        var attrs, keys, data = { }; 
+        attrs = getAttrs(elem); 
+        keys = getKeys(attrs); 
+        for(var i=0; i < keys.length; ++i) { 
+            if(keys[i].indexOf('data-') == 0) { 
+                data[keys[i].substring(5,keys[i].length)] = attrs[keys[i]]; 
+            }
+        }
+        return data; 
+    }; 
+    exports.addClass = function(elem,classes) { 
+        var currentClasses = ""; 
+        if(typeof elem.className != 'undefined') { 
+            currentClasses = ' ' + getArrayFromSpaceSeparated(elem.className).join(' ') + ' '; 
+            classes = getArrayFromSpaceSeparated(classes); 
+            for(var i=0; i < classes.length; ++i) { 
+                if(currentClasses.indexOf(' ' + classes[i] + ' ') < 0) { 
+                    currentClasses += classes[i] + ' '; 
+                }
+            }
+            elem.className = trim(currentClasses); 
+        } else { 
+            elem.className = trim(classes); 
+        }
+        return elem; 
+    }; 
+    exports.removeClass = function(elem,classes,single) { 
+        single = (typeof single == 'undefined') ? true : false; 
+        if(single) { 
+            return removeClass(elem,classes); 
+        } else {
+            var arr = [];  
+            for(var i=0; i < elem.length; ++i) { 
+                arr.push(removeClass(elem[i],classes)); 
+            }
+            return arr; 
+        }
+    }; 
+
+
+    /* ================================================ 
+        Our Private Methods:
+            1) UTILITY FUNCTIONS: 
+                -extend()
+                -trim()
+                -getKeys()
+                -getArrayFromSpaceSeparated()
+                -isObjectAnArray()
+            2) DOM EVENTS: 
+                -trigger()
+                -addEvent()
+            3) DOM MANIPULATION/CREATION: 
+                -creator()
+                -createElem()
+            4) DOM GETTERS/SETTERS: 
+                -getByClassName()
+                -getElementsByData()
+                -getAttrs()
+                -removeClass(); 
+    ================================================ */
+
+
+    /*=========================================================
+    |   1) UTILITY FUNCTIONS:                                 |
+    ======================================================== */ 
+    var extend, trim, getKeys, getArrayFromSpaceSeparated, isObjectAnArray; 
+    extend = function(args) { 
+        for(var i=args.length-1; i > 0; --i) { 
+            for(var key in args[i]) { 
+                var simpleExtend = true; 
+                if(typeof args[i-1][key] != 'undefined') { 
+                    if(typeof args[i][key] == 'object' && typeof args[i-1][key] == 'object') { 
+                        if(!isObjectAnArray(args[i]) && !isObjectAnArray(args[i-1])) { 
+                            simpleExtend = false; 
+                            args[i-1][key] = jDom.extend(args[i-1][key],args[i][key]); 
+                        }
+                    }
+                }
+                if(simpleExtend) { 
+                    args[i-1][key] = args[i][key]; 
+                } 
+            }
+        } 
+        return (args.length) ? args[0] : {}; 
+    }; 
+    trim = function(str) { 
+        return str.replace(/^\s+|\s+$/g,''); 
+    }; 
+    getKeys = function(obj) { 
+        if(Object.keys) { 
+            return Object.keys(obj); 
+        } else { 
+            arr = []; 
+            for(var key in obj) { 
+                arr.push(key); 
+            }
+            return arr; 
+        }
+    }; 
+    getArrayFromSpaceSeparated = function(str) { 
+        return trim(str).replace(/[ ]+/,' ').split(' ');  
+    }; 
+    isObjectAnArray = function(obj) { 
+        if(Array.isArray) { 
+            return Array.isArray(obj); 
+        } else { 
+            return v instanceof Array; 
+        }
+    }; 
+
+    /*=========================================================
+    |   2) DOM EVENTS:                                        |
+    ======================================================== */ 
+    var trigger, addEvent; 
+    trigger = function(context,eventType) { 
+        var event; // The custom event that will be created
+        if (d.createEvent) {
+            event = d.createEvent("HTMLEvents");
+            event.initEvent(eventType, true, true);
+        } else {
+            event = d.createEventObject();
+            event.eventType = eventType;
+        }
+
+        event.eventName = eventType;
+
+        if (d.createEvent) {
+            context.dispatchEvent(event);
+        } else {
+            context.fireEvent("on" + event.eventType, event);
+        }
+        return context;
+    }; 
+    addEvent = (function( w, d ) { 
+        if (d.addEventListener) { 
+            return function(elem, type, cb) { 
+                if ((elem && !elem.length) || elem === w) { 
+                    elem.addEventListener(type, cb, false); 
+                } 
+                else if (elem && elem.length) { 
+                    var len = elem.length; 
+                    for (var i = 0; i < len; i++) { 
+                        addEvent(elem[i], type, cb); 
+                    } 
+                } 
+            }; 
+        } else if (d.attachEvent) { 
+            return function (elem, type, cb) { 
+                if ((elem && !elem.length) || elem === w) { 
+                    elem.attachEvent('on' + type, function() { return cb.call(elem, w.event) }); 
+                } 
+                else if (elem.length) { 
+                    var len = elem.length; 
+                    for (var i = 0; i < len; i++) { 
+                        addEvent(elem[i], type, cb); 
+                    } 
+                } 
+            }; 
+        } 
+    })(this, d); 
+
+    /*=========================================================
+    |   3) DOM MANIPULATION/CREATION:                         |
+    ======================================================== */ 
+    var create, creator, createElem; 
+    create = function(obj) { 
+        return creator(obj); 
+    }; 
     creator = function(obj) { 
+        c.log(obj); 
         var elem, contains, i, contentsObj, innerElem; 
         obj.contains = (obj.contains == null) ? [] : obj.contains; 
         obj.attributes = (obj.attributes == null) ? {} : obj.attributes; 
+        obj.bindings = (obj.bindings == null) ? {} : obj.bindings; 
         obj.type = (obj.type == null) ? 'div' : obj.type; 
-        
-        elem = createElem(obj.type, obj.attributes); 
+
+        elem = createElem(obj.type, obj.attributes, obj.bindings); 
         contains = obj.contains; 
 
         if(typeof contains == "string") { 
@@ -33,9 +307,8 @@ var jDom = (function(w,d,c,$){
             }
         }
         return elem; 
-    }
-
-    createElem = function(type, attributes) {
+    }; 
+    createElem = function(type, attributes, bindings) {
         var elem, key, val;
         elem = d.createElement(type);
         if (typeof attributes !== "undefined") {
@@ -44,122 +317,87 @@ var jDom = (function(w,d,c,$){
                 elem.setAttribute(key, val);
             }
         }
+        if(typeof bindings !== "undefined") { 
+            for(var key in bindings) { 
+                if(typeof bindings[key] == 'function') { 
+                    addEvent(elem,key,bindings[key]); 
+                }
+            }
+        }
         return elem;
     };
 
-    interpret = function(str) { 
-        var re, text, attr, type, dotIndex, hashIndex, id, classes; 
-        re = { text: /\${([^}]+)}/, attr: /\$\[(.*?)\]/ }  
 
-        // extract text/attrs: ${text}
-        text = str.match(re.text); 
-        attr = str.match(re.attr); 
-
-        // replace the text and attr strings in original string (if set): 
-        if(text) str = str.replace(text[0],''); 
-        if(attr) str = str.replace(attr[0],''); 
-
-        // set default type:
-        type = 'div'; 
-        if(str.length > 0 || attr) { 
-            dotIndex = str.indexOf('.'); hashIndex = str.indexOf('#')
-            // if we have an element type, find it and remove it from string: 
-            if(dotIndex > 0 && hashIndex > 0) { 
-                // classes and id's ARE present
-                type = str.substring(0,Math.min(dotIndex,hashIndex)); 
-                str = str.replace(type,''); 
-            } else if(dotIndex < 0 && hashIndex < 0) { 
-                // NEITHER the id NOR the class are present
-                type = str; 
-                str = str.replace(type,''); 
-            } else if(dotIndex*hashIndex < 0) { 
-                // either an ID or a Class are NOT present (but one is)
-                type = str.substring(0,Math.max(dotIndex,hashIndex)); 
-                str = str.replace(type,''); 
-            } 
-
-            // find any id's or classes: 
-            id = false; classes = false; 
-            if(str.length > 0) { 
-                hashIndex = str.indexOf('#'); 
-                if(hashIndex > -1) { 
-                    id = str.substring(hashIndex+1,str.length); 
-                    dotIndex = id.indexOf('.'); 
-                    if(dotIndex > -1) { 
-                        id = id.substring(0,dotIndex); 
-                    }
-                    str = str.replace('#'+id,''); 
-                } 
-                if(str.length > 0) { 
-                    classes = str.split('.').join(' ').trim(); 
+    /*=========================================================
+    |   4) DOM GETTERS/SETTERS:                               |
+    ======================================================== */ 
+    var getByClassName, getElementsByData, getAttrs, removeClass;
+    getByClassName = function(str,context) { 
+        var candidates, foundElems = []; 
+        candidates = context.getElementsByTagName('*'); 
+        str = getArrayFromSpaceSeparated(str); 
+        for(var i=0; i < candidates.length; ++i) { 
+            var thisClass, compliant = true; 
+            thisClass = ' ' + getArrayFromSpaceSeparated(candidates[i].className).join(' ') + ' '; 
+            for(var j=0; j < str.length; ++j) { 
+                var requirement = ' ' + str[j] + ' '; 
+                if(thisClass.indexOf(requirement) == -1) { 
+                    compliant = false; 
+                    break; 
                 }
-            } 
-
-        } else { 
-            if(text && !attr) { 
-                return text[1]; 
+            }
+            if(compliant) { 
+                foundElems.push(candidates[i]); 
             }
         }
-
-        // interpret attributes: 
-        attr = (attr) ? attr[1] : {};
-        if(typeof attr == 'string') { 
-            var arr = attr.split(','); 
-            attr = {}; 
-            for(var i=0; i < arr.length; ++i) { 
-                var theseattrs = arr[i].split('='); 
-                attr[theseattrs[0]] = theseattrs[1]; 
-            }
-        }  
-
-        // put any ID's classes in as well - we're not doing an extend so they get overwritten: 
-        if(id) attr['id'] = id; 
-        if(classes) attr['class'] = classes; 
-
-        return { 
-            'type': type, 
-            'attributes': attr, 
-            'contains': (text) ? [text[1]] : []
-        }
-    } 
-
-    interpreter = function(str) { 
-        var levels, currentLevel, obj, plusIndex, starIndex;
-        // split on '$>' for hierarchy: 
-        levels = str.split('$>'); 
-        plusIndex = levels[0].indexOf('$+');
-        starIndex = levels[0].indexOf('$*'); 
-        if(plusIndex > -1 || starIndex > -1) { 
-            // we can't really handle sibling elements ($* || $+) on the base level so if it occurs we're going to wrap in a div
-            obj = interpret('div'); 
-        } else { 
-            // send level1 to interpret() while removing it from [levels]
-            obj = interpret(levels.splice(0,1)[0]); 
-        }
-        var currobj = obj; 
-        // perform recursive calls for deeper-level elements: 
-        for(var i=0; i < levels.length; ++i) { 
-            var siblings = levels[i].split('$+'); 
-            for(var j=0; j < siblings.length; ++j) { 
-                starIndex = siblings[j].indexOf('$*'); 
-                if(starIndex > -1) { 
-                    // get multiplier (if exists) and remove from string: 
-                    var multiplier = parseInt(siblings[j].substring(starIndex+2,siblings[j].length)); 
-                    siblings[j] = siblings[j].replace('$*'+multiplier,''); 
-                    for(var k=0; k < multiplier; ++k) { 
-                        currobj.contains.push(interpreter(siblings[j])); 
-                    } 
-                } else { 
-                    currobj.contains.push(interpreter(siblings[j]));
-                }
-            } 
-            currobj = obj.contains[obj.contains.length-1]
-        } 
-        return obj; 
-    } 
-    
-    return { 
-        create: create
+        return foundElems; 
     }; 
-    
-})(window,document,console,jQuery); 
+    getElementsByData = function(key,val,context,type) { 
+        var candidates, elems = []; 
+        candidates = context.getElementsByTagName(type); 
+        for(var i=0; i < candidates.length; ++i) { 
+            if(candidates[i].getAttribute('data-' + key)) {
+                if(val != null) { 
+                    if(candidates[i].getAttribute('data-'+key) == val) { 
+                        elems.push(candidates[i]); 
+                    }
+                } else { 
+                    elems.push(candidates[i]); 
+                }
+            }
+        }
+        return elems; 
+    }; 
+    getAttrs = function(elem) { 
+        var attrs, obj = {}; 
+        attrs = elem.attributes; 
+        for(var i=0; i < attrs.length; ++i) { 
+            var attr = attrs.item(i); 
+            obj[attr.nodeName] = attr.nodeValue; 
+        }
+        return obj; 
+    }; 
+    removeClass = function(elem,classes) { 
+        if(typeof elem.className != "undefined") { 
+            var current, numRemovedInner, numRemoved = 0;
+            classes = getArrayFromSpaceSeparated(classes); 
+            current = getArrayFromSpaceSeparated(elem.className);  
+            for(var i=0; i < current.length; ++i) { 
+                numRemovedInner = 0; 
+                for(var j=0; j < classes.length; ++j) { 
+                    if(current[i-numRemoved] == classes[j]) { 
+                        current.splice(i-numRemoved,1);
+                        classes.splice(j,1); 
+                        ++numRemoved; 
+                        break; 
+                    }
+                }
+            } 
+            elem.className = (current.length) ? current.join(' ') : ""; 
+        }
+        return elem; 
+    }
+
+    // return our public functions: 
+    return exports; 
+})(jDom || {}, window,document,console); 

@@ -1,6 +1,6 @@
 var theApptPicker = (function(w,d,c,$){
     var createPicker, makeLists, init, state, defaults, handlePickerBtnClick, handleBaseTimeClick, applyMiddleClasses, 
-        handleSecondaryTimeClick, handleSecondaryHover, fixtimingorder, reportChange, registerCallback, wireCallback; 
+        handleSecondaryTimeClick, handleSecondaryHover, fixtimingorder, reportChange, registerCallback, wireCallback, scrollTopKey; 
 
     state = { 
         count: 0,
@@ -22,32 +22,41 @@ var theApptPicker = (function(w,d,c,$){
         changetxt: true 
     }; 
     
+    // scrollTopKey = (window.pageYOffset !== undefined) ? window.pageYOffset : (document.documentElement || document.body.parentNode || document.body).scrollTop
+    
+    // $(d).on('click','.appt-picker.first>li',handleBaseTimeClick);
+    // $(d).on('click','.appt-picker.second>li',handleSecondaryTimeClick); 
+    // $(d).on('hover focus', '.appt-picker.second>li', handleSecondaryHover); 
     makeLists = function(times, exact) { 
         exact = (typeof exact == 'undefined') ? false : true; 
         var contains, obj, lim; 
         contains = [ ]; 
         lim = (exact) ? times.length : times.length -1; 
         for(var i=0; i < lim; ++i) {
-            var str, attrs = { }; 
+            var str, bindings = { }, attrs = { };
             if(exact) { 
                 str = timeUtils.formatTimeStr(times[i]); 
                 attrs['data-time'] = times[i].getTime(); 
+                bindings['click'] = handleSecondaryTimeClick; 
+                bindings['mouseover'] = handleSecondaryHover; 
             } else { 
                 str = timeUtils.formatTimeStr(times[i], true) + " - " + 
                       timeUtils.formatTimeStr(times[i+1],true); 
                 attrs['data-start'] = times[i].getTime(); 
                 attrs['data-end'] = times[i+1].getTime();
+                bindings['click'] = handleBaseTimeClick; 
             }
             attrs['data-listindex'] = i; 
             contains.push({
                 type: 'li', 
                 attributes: attrs, 
+                bindings: bindings,
                 contains: str
             });
         }
         obj = { 
             type: 'ul', 
-            attributes: { class: (exact) ? 'appt-picker second' : 'appt-picker first' }, 
+            attributes: { 'class': (exact) ? 'appt-picker second' : 'appt-picker first' }, 
             contains: contains
         }
         return jDom.create(obj); 
@@ -55,17 +64,16 @@ var theApptPicker = (function(w,d,c,$){
     
     createPicker = function(el) { 
         var settings, picker, tlarge, tsmall; 
-        settings = $.extend({},defaults,$(el).data()); 
-        c.log(settings); 
+        settings = jDom.extend({},defaults,jDom.getData(el))
         settings.btn = jDom.create('button.appt-picker-button#pickerBtn_'+state.count+'${' + settings.opentext + '}'); 
-        $(settings.btn).on('click',handlePickerBtnClick); 
+        jDom.on(settings.btn,'click',handlePickerBtnClick); 
         el.appendChild(settings.btn); 
         tlarge = timeUtils.getTimes(settings.start,settings.end,settings.subinterval); 
         tsmall = timeUtils.getTimes(settings.start,settings.end,settings.interval);
         tlarge = makeLists(tlarge); 
         tsmall = makeLists(tsmall,true);
         el.appendChild(tlarge); 
-        el.appendChild(tsmall); 
+        el.appendChild(tsmall);  
         el.setAttribute('data-pickerid','picker_'+state.count); 
         settings.minimizedheight = el.offsetHeight + 'px'; 
 
@@ -74,12 +82,13 @@ var theApptPicker = (function(w,d,c,$){
             if(settings.input) { 
                 settings.input.setAttribute('data-pickerid', 'picker_'+state.count); 
                 settings.input.setAttribute('readonly','true');
-                $(settings.input).on('click focus',function(){
+            
+                jDom.on(settings.input, 'click', function(){ 
                     var id = this.getAttribute('data-pickerid'); 
                     if(state.pickers[id].minimized) { 
-                        $(state.pickers[id].settings.btn).trigger('click'); 
-                    } 
-                }); 
+                        jDom.trigger(state.pickers[id].settings.btn,'click')
+                    }
+                });                 
             }
         }
 
@@ -119,16 +128,21 @@ var theApptPicker = (function(w,d,c,$){
         
         start = this.getAttribute('data-start'); 
 
-        $('.appt-picker.first>li').removeClass('active'); 
-        $(this).addClass('active');
+        // var listels = jDom.getByClassName('appt-picker first')[0].getElementsByTagName('li'); 
+        // for(var i=0; i < listels.length; ++i) { 
+        //     jDom.removeClass(listels[i],'active'); 
+        // }
+        jDom.removeClass(jDom.getByClassName('appt-picker first')[0].getElementsByTagName('li'), 'active', false); 
+
+        jDom.addClass(this,'active'); 
+    
         if(!state.pickers[id].expanded) {
             state.pickers[id].expanded = true; 
             list.style.width = '40%';  
         }
-        
-        y = $(container).find('ul.appt-picker>li[data-time="'+start+'"]')[0].offsetTop;
+    
+        y = jDom.getElementsByData('time',start,container,'li')[0].offsetTop; 
         $(secondarylist).animate({scrollTop: y+"px"}, 300, 'easeInOutExpo', function(){}); 
-             
     }; 
     
     applyMiddleClasses = function(list,a,b) { 
@@ -137,12 +151,16 @@ var theApptPicker = (function(w,d,c,$){
         start = Math.min(a,b); 
         end = Math.max(a,b); 
         if(a-b!=0) { 
-            $(arr).removeClass('pick-start pick-middle pick-end'); 
+            jDom.removeClass(arr,'pick-start pick-middle pick-end', false); 
+            // $(arr).removeClass('pick-start pick-middle pick-end'); 
             for(var i=start+1; i < end; ++i) { 
-                $(arr[i]).addClass('pick-middle');    
+                jDom.addClass(arr[i],'pick-middle'); 
+                // $(arr[i]).addClass('pick-middle');    
             }    
-            $(arr[start]).addClass('pick-start'); 
-            $(arr[end]).addClass('pick-end'); 
+            jDom.addClass(arr[start],'pick-start'); 
+            jDom.addClass(arr[end],'pick-end'); 
+            // $(arr[start]).addClass('pick-start'); 
+            // $(arr[end]).addClass('pick-end'); 
         }
     }; 
     
@@ -167,8 +185,10 @@ var theApptPicker = (function(w,d,c,$){
             state.pickers[id].end = false; 
             state.pickers[id].start = time
             state.pickers[id].startindex = this.getAttribute('data-listindex'); 
-            $(list).find('li').removeClass('pick-start pick-middle pick-end');
-            $(this).addClass('pick-start'); 
+            jDom.removeClass(list.getElementsByTagName('li'),'pick-start pick-middle pick-end',false); 
+            jDom.addClass(this,'pick-start'); 
+            // $(list).find('li').removeClass('pick-start pick-middle pick-end');
+            // $(this).addClass('pick-start'); 
             reportChange(id); 
         } else { 
             if(this.getAttribute('data-listindex') != state.pickers[id].startindex) { 
@@ -176,9 +196,11 @@ var theApptPicker = (function(w,d,c,$){
                 state.pickers[id].selecting = false; 
                 state.pickers[id].end = time; 
                 state.pickers[id].endindex = this.getAttribute('data-listindex'); 
-                $(this).addClass('pick-end'); 
+                // $(this).addClass('pick-end'); 
                 applyMiddleClasses(list,state.pickers[id].startindex,state.pickers[id].endindex); 
-                $(state.pickers[id].settings.btn).click(); 
+                // jDom.addClass(this,'pick-end'); 
+                // $(state.pickers[id].settings.btn).click(); 
+                jDom.trigger(state.pickers[id].settings.btn,'click'); 
                 if(state.pickers[id].settings.inputid) { 
                     fixtimingorder(id); 
                     var str = timeUtils.formatTimeStr(state.pickers[id].start) + " to " + 
@@ -203,8 +225,10 @@ var theApptPicker = (function(w,d,c,$){
                 applyMiddleClasses(list,state.pickers[id].startindex,curr); 
             } else { 
                 // we are hovering the starting time <li> : 
-                $(list.getElementsByTagName('li')).removeClass('pick-middle pick-end');
-                $(this).addClass('pick-start'); 
+                jDom.removeClass(list.getElementsByTagName('li'),'pick-middle pick-end', false); 
+                jDom.addClass(this,'pick-start'); 
+                // $(list.getElementsByTagName('li')).removeClass('pick-middle pick-end');
+                // $(this).addClass('pick-start'); 
             }
         }
     }; 
@@ -214,7 +238,8 @@ var theApptPicker = (function(w,d,c,$){
             state.pickers[id].settings.changecallback(state.pickers[id]); 
         }
         if(state.pickers[id].settings.changetxt) { 
-            var str = timeUtils.formatTimeStr(state.pickers[id].start) + " to " + timeUtils.formatTimeStr(state.pickers[id].end); 
+            var str = ""; 
+            str = timeUtils.formatTimeStr(state.pickers[id].start) + " to " + timeUtils.formatTimeStr(state.pickers[id].end); 
             state.pickers[id].settings.btn.innerHTML = str; 
         }
     }; 
@@ -244,10 +269,16 @@ var theApptPicker = (function(w,d,c,$){
     }
     
     init = function() { 
-        $('.apptPicker').each(function(){createPicker(this)}); 
-        $(d).on('click','.appt-picker.first>li',handleBaseTimeClick);
-        $(d).on('click','.appt-picker.second>li',handleSecondaryTimeClick); 
-        $(d).on('hover focus', '.appt-picker.second>li', handleSecondaryHover); 
+        var elems = jDom.getByClassName('apptPicker'); 
+        for(var i=0; i < elems.length; ++i) { 
+            createPicker(elems[i]); 
+        }
+
+
+        // $('.apptPicker').each(function(){createPicker(this)}); 
+        // $(d).on('click','.appt-picker.first>li',handleBaseTimeClick);
+        // $(d).on('click','.appt-picker.second>li',handleSecondaryTimeClick); 
+        // $(d).on('hover focus', '.appt-picker.second>li', handleSecondaryHover); 
     };
 
     /* Public Methods: */
@@ -295,7 +326,8 @@ var theApptPicker = (function(w,d,c,$){
 
         toggleOpen = function() { 
             if(typeof pickerid != 'undefined') {
-                $(state.pickers[pickerid].settings.btn).click();
+                // $(state.pickers[pickerid].settings.btn).click();
+                jDom.trigger(state.pickers[pickerid].settings.btn, 'click'); 
                 return apptPicker(el.getAttribute('id')); 
             }
         }; 
@@ -309,6 +341,7 @@ var theApptPicker = (function(w,d,c,$){
     };
 
     // go! go! go! 
-    $(d).ready(init); 
+    jDom.ready(init);
+    // $(d).ready(init); 
     
 })(window,document,console,jQuery); 

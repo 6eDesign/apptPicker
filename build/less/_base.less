@@ -40,21 +40,34 @@ body {
 }
 
 // header
-
 .header {
   background-color: lighten(@dark, 20%);
   padding: 20px 0;
   margin-bottom: 20px;
   box-shadow: 0 1px 0 rgba(0,0,0,0.3);
   background-image: url(../img/demo/logo.png); 
-  background-position: 98% 50%, center; 
+  background-position: -12% 50%,center; 
   background-repeat: no-repeat; 
   .brand {
     margin: 0;
     padding: 0;
     color: @light;
+    position: relative; 
+    left: -100px; 
+    top: -2px;
+    opacity: 0; 
   }
-
+  .poweredby {  
+    position: relative; 
+    opacity: 0; 
+    top: -10px;
+  }
+  .poweredby.first { 
+    left: -100px; 
+  }
+  .poweredby.second { 
+    left: 100px; 
+  }
 }
 
 hr {

@@ -34,7 +34,7 @@ var dist = {
 
 gulp.task('scripts:dist', function() {
   return gulp.src(dist.files)
-    .pipe(uglify())
+    // .pipe(uglify())
     .pipe(concat(dist.outfile))
     .pipe(gulp.dest(output + 'js/'))
     .pipe(livereload());
@@ -69,6 +69,12 @@ gulp.task('scripts:vendor', function() {
 var demojs = { 
   outfile: 'demo.min.js', 
   files: [ 
+    input + 'js/jquery.min.js',
+    input + 'js/jquery.easing.min.js',  
+    input + 'js/timeUtils.js',
+    input + 'js/jDom.js', 
+    input + 'js/jDom.interpret.js', 
+    input + 'js/apptPicker.js',   
     input + 'js/rainbow-custom.min.js'
   ]
 }; 
@@ -78,7 +84,7 @@ var demojs = {
 //
 gulp.task('scripts:demo', function(){
   return gulp.src(demojs.files) 
-    .pipe(uglify())
+    // .pipe(uglify())
     .pipe(concat(demojs.outfile))
     .pipe(gulp.dest(output + 'js/'))
     .pipe(livereload());   
@@ -147,7 +153,7 @@ gulp.task('html', function(){
 gulp.task('watch', function() {
   gulp.watch(dist.files, ['scripts:dist']);
   gulp.watch(vendor.files, ['scripts:vendor']);
-  gulp.watch(vendor.files, ['scripts:demo']);
+  gulp.watch(demojs.files, ['scripts:demo']);
   gulp.watch(css.files, ['stylesheet:dist']);
   gulp.watch(css.files, ['stylesheet:demo']);
   gulp.watch('*.html', ['html']); 
