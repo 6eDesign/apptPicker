@@ -13,89 +13,103 @@
 div.apptPicker, div.dynApptPicker { 
   position: relative;
   width: 100%;
-  height: 33px;
+  height: 0px;
   overflow: hidden;
   margin-bottom: 20px;
   .no-selection;
   .transition(height,450ms,cubic-bezier(0.765, 0.725, 0.045, 1.060));
-}
+  div.list-container { 
+    height: 318px;
+    width: 100%; 
+    display: block;
+    overflow: hidden;
+    overflow-y: auto;
+    position: absolute;
+    // left: 0px;
+    // top: 0px;
+    // right: 0px;
+    // bottom: 0px;
+    ul.appt-picker { 
+      position: absolute;
+      // top: 0px;
+      // left: 0px;
+      z-index: 1;
+      // display: block;
+      width: 100%;
+      // list-style-type: none;
+      // padding: 0;
+      // margin: 0;
+      overflow: auto;
+      .transition(width,400ms,cubic-bezier(0.765, 0.725, 0.045, 1.060));
+      li { 
+        text-align: center; 
+        padding: 7px 0;
+        padding-left: 40%;
+        color: rgb(136, 136, 136);
+        font-weight: bold;
+        // .transition(background-color,350ms,cubic-bezier(0.230, 0.720, 0.000, 0.895));
+        // .transition(margin,350ms,cubic-bezier(0.230, 0.720, 0.000, 0.895));
+        &:hover { 
+          background-color: rgb(238,238,238); 
+          cursor: pointer;        
+        }
+      }
+    }
 
-ul.appt-picker { 
-  position: absolute;
-  top: 38px;
-  left: 2px;
-  z-index: 1;
-  display: block;
-  width: 100%;
-  height: 381px;
-  list-style-type: none;
-  padding: 0;
-  margin: 0;
-  overflow: hidden;
-  overflow-y: auto!important;
-  .transition(width,400ms,cubic-bezier(0.765, 0.725, 0.045, 1.060));
-  li { 
-    text-align: center; 
-    padding: 7px 0;
-    padding-left: 40%;
-    color: rgb(136, 136, 136);
-    font-weight: bold;
-    .transition(background-color,350ms,cubic-bezier(0.230, 0.720, 0.000, 0.895));
-    &:hover { 
-      background-color: rgb(238,238,238); 
-      cursor: pointer;        
+    ul.appt-picker.scrollTop {
+      .transition(margin,350ms,cubic-bezier(0.230, 0.720, 0.000, 0.895));
     }
-  }
-}
 
-ul.appt-picker.first { 
-  width: 100%; 
-  z-index: 2;    
-  li {
-    .css-gradient(lighten(@dark, 40%),lighten(@dark, 30%));
-    border-bottom: 1px solid darken(rgb(179, 179, 179), 40%);
-    padding: 15px 0px;
-    color: white;
-    text-shadow: -1px 0 0 rgba(0,0,0,0.2);
-    font-weight: bold;
-    &:hover { 
-      .css-gradient(lighten(@dark, 50%),lighten(@dark, 40%));
+    ul.appt-picker.first { 
+      width: 100%; 
+      z-index: 2;    
+      li {
+        .css-gradient(lighten(@dark, 40%),lighten(@dark, 30%));
+        border-bottom: 1px solid darken(rgb(179, 179, 179), 40%);
+        padding: 15px 0px;
+        color: white;
+        text-shadow: -1px 0 0 rgba(0,0,0,0.2);
+        font-weight: bold;
+        &:hover { 
+          .css-gradient(lighten(@dark, 50%),lighten(@dark, 40%));
+        }
+        &.active, &:active { 
+          background: rgb(14, 61, 88); 
+        }
+      }
     }
-    &.active, &:active { 
-      background: rgb(14, 61, 88); 
-    }
-  }
-}
 
-ul.appt-picker.second { 
-  li { 
-    border-bottom: 1px solid darken(rgb(243,243,243), 20%);
-    background-position: 52% 2px, center;
-    background-repeat: no-repeat;   
-    &.pick-start { 
-      border-top: @secondary-shelf-border; 
-      border-bottom: none; 
-      background-color: @secondary-shelf-bg-color; 
-      background-image: url(@secondary-shelf-background-image);
-      background-position: 98% -5%, center;
-    }
-    &.pick-middle { 
-      background-color: #FCFCFC; 
-      background-image: url(@secondary-shelf-background-image); 
-      border-color: #E6E6E6; 
-      background-repeat: repeat-y; 
-      background-position: 98% 50%, center; 
-    }
-    &.pick-end { 
-      background-color: @secondary-shelf-bg-color;  
-      border-bottom: @secondary-shelf-border;   
-      border-top: none; 
-      background-image: url(@secondary-shelf-background-image); 
-      background-position: 98% 105%,center;
+    ul.appt-picker.second { 
+      li { 
+        border-bottom: 1px solid darken(rgb(243,243,243), 20%);
+        background-position: 102% 2px;
+        background-repeat: no-repeat;   
+        &.pick-start { 
+          border-top: @secondary-shelf-border; 
+          border-bottom: none; 
+          background-color: @secondary-shelf-bg-color; 
+          background-image: url(@secondary-shelf-background-image);
+          background-position: 98% -5%;
+        }
+        &.pick-middle { 
+          background-color: #FCFCFC; 
+          background-image: url(@secondary-shelf-background-image); 
+          border-color: #E6E6E6; 
+          background-repeat: repeat-y; 
+          background-position: 98% 50%; 
+        }
+        &.pick-end { 
+          background-color: @secondary-shelf-bg-color;  
+          border-bottom: @secondary-shelf-border;   
+          border-top: none; 
+          background-image: url(@secondary-shelf-background-image); 
+          background-position: 98% 105%;
 
-    }
-    &.pick-start, &.pick-middle, &.pick-end { 
-      // border-right: 5px solid @secondary-shelf-progress-border-color; 
+        }
+        &.pick-start, &.pick-middle, &.pick-end { 
+          // border-right: 5px solid @secondary-shelf-progress-border-color; 
+        }
+      }
     }
   }
 }

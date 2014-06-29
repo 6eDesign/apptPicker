@@ -15,6 +15,9 @@ var jDom = (function(exports,w,d,c){
             2) DOM EVENTS: 
             -jDom.ready(function)
                 enqueues loadEvents on domready
+            -jDom.on(element,eventTypes,func)
+                eventTypes can be space separated list of events
+                events are 'mouseover','click','focus',... (not 'onmouseover', 'onclick', etc..)
             -jDom.trigger(context,eventType)
             
             3) DOM MANIPULATION/CREATION: 
@@ -68,18 +71,6 @@ var jDom = (function(exports,w,d,c){
     /*=========================================================
     |   2) DOM EVENTS:                                        |
     ======================================================== */ 
-    exports.on = function(elem,eventType,func) { 
-        addEvent(elem,eventType,func); 
-        return elem; 
-    }; 
-    exports.trigger = function(context,eventType) { 
-        return trigger(context,eventType); 
-    }; 
-
-
-    /*=========================================================
-    |   3) DOM MANIPULATION/CREATION:                         |
-    ======================================================== */ 
     exports.ready = function(func) { 
         var oldonload = w.onload;
         if (typeof w.onload != 'function' ) {
@@ -91,6 +82,21 @@ var jDom = (function(exports,w,d,c){
             }
         }
     }; 
+    exports.trigger = function(context,eventType) { 
+        return trigger(context,eventType); 
+    }; 
+    exports.on = function(elem,eventTypes,func) { 
+        eventTypes = getArrayFromSpaceSeparated(eventTypes); 
+        for(var i=0; i < eventTypes.length; ++i) { 
+            addEvent(elem,eventTypes[i],func); 
+        }
+        return elem; 
+    }; 
+
+
+    /*=========================================================
+    |   3) DOM MANIPULATION/CREATION:                         |
+    ======================================================== */ 
     exports.create = function(obj) {
         return create(obj);
     };
@@ -283,7 +289,6 @@ var jDom = (function(exports,w,d,c){
         return creator(obj); 
     }; 
     creator = function(obj) { 
-        c.log(obj); 
         var elem, contains, i, contentsObj, innerElem; 
         obj.contains = (obj.contains == null) ? [] : obj.contains; 
         obj.attributes = (obj.attributes == null) ? {} : obj.attributes; 

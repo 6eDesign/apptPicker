@@ -1,6 +1,7 @@
-var theApptPicker = (function(w,d,c,$){
+var theApptPicker = (function(w,d,c){
     var createPicker, makeLists, init, state, defaults, handlePickerBtnClick, handleBaseTimeClick, applyMiddleClasses, 
-        handleSecondaryTimeClick, handleSecondaryHover, fixtimingorder, reportChange, registerCallback, wireCallback, scrollTopKey; 
+        handleSecondaryTimeClick, handleSecondaryHover, fixtimingorder, reportChange, registerCallback, wireCallback, 
+        scrollTopKey, animateScrollTop, endAnimateScrollTop; 
 
     state = { 
         count: 0,
@@ -22,7 +23,6 @@ var theApptPicker = (function(w,d,c,$){
         changetxt: true 
     }; 
     
-    // scrollTopKey = (window.pageYOffset !== undefined) ? window.pageYOffset : (document.documentElement || document.body.parentNode || document.body).scrollTop
     makeLists = function(times, exact) { 
         exact = (typeof exact == 'undefined') ? false : true; 
         var contains, obj, lim; 
@@ -50,10 +50,25 @@ var theApptPicker = (function(w,d,c,$){
                 contains: str
             });
         }
+        var bindings = {}; 
+        if(exact) { 
+            var bindings = {
+                webkitTransitionEnd: endAnimateScrollTop, 
+                oTransitionEnd: endAnimateScrollTop, 
+                transitionend: endAnimateScrollTop
+            }; 
+        }
         obj = { 
-            type: 'ul', 
-            attributes: { 'class': (exact) ? 'appt-picker second' : 'appt-picker first' }, 
-            contains: contains
+            type: 'div', 
+            attributes: {'class': 'list-container'}, 
+            bindings: bindings,
+            contains: [
+                {
+                    type: 'ul', 
+                    attributes: { 'class': (exact) ? 'appt-picker second' : 'appt-picker first' }, 
+                    contains: contains
+                }
+            ]
         }
         return jDom.create(obj); 
     }; 
@@ -61,9 +76,6 @@ var theApptPicker = (function(w,d,c,$){
     createPicker = function(el) { 
         var settings, picker, tlarge, tsmall; 
         settings = jDom.extend({},defaults,jDom.getData(el))
-        settings.btn = jDom.create('button.appt-picker-button#pickerBtn_'+state.count+'${' + settings.opentext + '}'); 
-        jDom.on(settings.btn,'click',handlePickerBtnClick); 
-        el.appendChild(settings.btn); 
         tlarge = timeUtils.getTimes(settings.start,settings.end,settings.subinterval); 
         tsmall = timeUtils.getTimes(settings.start,settings.end,settings.interval);
         tlarge = makeLists(tlarge); 
@@ -78,13 +90,7 @@ var theApptPicker = (function(w,d,c,$){
             if(settings.input) { 
                 settings.input.setAttribute('data-pickerid', 'picker_'+state.count); 
                 settings.input.setAttribute('readonly','true');
-            
-                jDom.on(settings.input, 'click', function(){ 
-                    var id = this.getAttribute('data-pickerid'); 
-                    if(state.pickers[id].minimized) { 
-                        jDom.trigger(state.pickers[id].settings.btn,'click')
-                    }
-                });                 
+                jDom.on(settings.input, 'focus', handlePickerBtnClick);                 
             }
         }
 
@@ -104,7 +110,7 @@ var theApptPicker = (function(w,d,c,$){
     }; 
     
     handlePickerBtnClick = function() { 
-        var id = 'picker_' + this.getAttribute('id').split('pickerBtn_').pop(); 
+        var id = this.getAttribute('data-pickerid'); 
         if(state.pickers[id].el.offsetHeight < parseFloat(state.pickers[id].settings.height)) { 
             var targetHeight = state.pickers[id].settings.height; 
             state.pickers[id].minimized = false; 
@@ -115,10 +121,28 @@ var theApptPicker = (function(w,d,c,$){
         state.pickers[id].el.style.height = targetHeight; 
     }; 
     
+    endAnimateScrollTop = function() {
+        var list, offset; 
+        list = this.getElementsByTagName('ul')[0]; 
+        jDom.removeClass(list,'scrollTop'); 
+        offset = this.getAttribute('data-scrolltop'); 
+        list.style.marginTop = '0px'; 
+        this.scrollTop = offset; 
+    }; 
+
+    animateScrollTop = function(elem,id,top) { 
+        var curr = elem.parentNode.scrollTop; 
+        if(top != curr) { 
+            jDom.addClass(elem,'scrollTop'); 
+            elem.parentNode.setAttribute('data-scrolltop', top); 
+            elem.style.marginTop = (curr - top) + "px"; 
+        }
+    }; 
+
     handleBaseTimeClick = function() { 
         var list, container, secondarylist, start, id, y; 
         list = this.parentNode; 
-        container = list.parentNode; 
+        container = list.parentNode.parentNode; 
         secondarylist = container.getElementsByTagName('ul')[1]; 
         id = container.getAttribute('data-pickerid');
         
@@ -134,8 +158,8 @@ var theApptPicker = (function(w,d,c,$){
         }
     
         y = jDom.getElementsByData('time',start,container,'li')[0].offsetTop; 
-        secondarylist.scrollTop = y; 
-        // $(secondarylist).animate({scrollTop: y+"px"}, 300, 'easeInOutExpo', function(){}); 
+        animateScrollTop(secondarylist,id,y); 
+        // secondarylist.style.marginTop = ((-1)*y)+ "px"; 
     }; 
     
     applyMiddleClasses = function(list,a,b) { 
@@ -165,7 +189,7 @@ var theApptPicker = (function(w,d,c,$){
     handleSecondaryTimeClick = function() { 
         var list, container, time, id; 
         list = this.parentNode; 
-        container = list.parentNode; 
+        container = list.parentNode.parentNode; 
         id = container.getAttribute('data-pickerid'); 
         time = new Date(parseFloat(this.getAttribute('data-time'))); 
         if(state.pickers[id].selecting == false) { 
@@ -184,7 +208,7 @@ var theApptPicker = (function(w,d,c,$){
                 state.pickers[id].end = time; 
                 state.pickers[id].endindex = this.getAttribute('data-listindex'); 
                 applyMiddleClasses(list,state.pickers[id].startindex,state.pickers[id].endindex); 
-                jDom.trigger(state.pickers[id].settings.btn,'click'); 
+                jDom.trigger(state.pickers[id].settings.input,'click'); 
                 if(state.pickers[id].settings.inputid) { 
                     fixtimingorder(id); 
                     var str = timeUtils.formatTimeStr(state.pickers[id].start) + " to " + 
@@ -201,7 +225,7 @@ var theApptPicker = (function(w,d,c,$){
     handleSecondaryHover = function() { 
         var id, curr, list;
         list = this.parentNode; 
-        id = list.parentNode.getAttribute('data-pickerid'); 
+        id = list.parentNode.parentNode.getAttribute('data-pickerid'); 
         curr = this.getAttribute('data-listindex'); 
         if(state.pickers[id].selecting && state.pickers[id].lasthoverindex != curr) {
             state.pickers[id].lasthoverindex = curr;
@@ -222,7 +246,6 @@ var theApptPicker = (function(w,d,c,$){
         if(state.pickers[id].settings.changetxt) { 
             var str = ""; 
             str = timeUtils.formatTimeStr(state.pickers[id].start) + " to " + timeUtils.formatTimeStr(state.pickers[id].end); 
-            state.pickers[id].settings.btn.innerHTML = str; 
         }
     }; 
     
@@ -290,7 +313,6 @@ var theApptPicker = (function(w,d,c,$){
                 for(var key in opts) { 
                     el.setAttribute('data-'+key, opts[key]); 
                 }
-                c.log(el); 
                 if(!pickerid) { 
                     createPicker(el); 
                     return apptPicker(el.getAttribute('id')); 
@@ -302,7 +324,7 @@ var theApptPicker = (function(w,d,c,$){
 
         toggleOpen = function() { 
             if(typeof pickerid != 'undefined') {
-                jDom.trigger(state.pickers[pickerid].settings.btn, 'click'); 
+                jDom.trigger(state.pickers[pickerid].settings.input, 'click'); 
                 return apptPicker(el.getAttribute('id')); 
             }
         }; 
@@ -318,4 +340,4 @@ var theApptPicker = (function(w,d,c,$){
     // go! go! go! 
     jDom.ready(init);
     
-})(window,document,console,jQuery); 
+})(window,document,console); 
