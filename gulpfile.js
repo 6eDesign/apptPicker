@@ -35,7 +35,7 @@ var dist = {
 
 gulp.task('scripts:dist', function() {
   return gulp.src(dist.files)
-    // .pipe(uglify())
+    .pipe(uglify())
     .pipe(concat(dist.outfile))
     .pipe(gulp.dest(output + 'js/'))
     .pipe(livereload());

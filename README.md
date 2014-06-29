@@ -1,6 +1,8 @@
-#apptPicker.js
+#apptPicker.js (BETA)
 
 A lightweight JavaScript Appointment Picker for selecting time ranges.  
+
+apptPicker.js weighs about 4KB gzipped and does not require jQuery or any other dependencies.  apptPicker.js uses CSS transitions that degrade to simple non-animated changes of state in older browsers such as IE8.
 
 [See a live Example on the apptPicker.js github.io Page](http://6eDesign.github.io/apptPicker/)
 ![alt tag](http://6edesign.github.io/apptPicker/dist/img/demo/demo-image1.png)
