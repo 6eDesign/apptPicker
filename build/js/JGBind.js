@@ -25,7 +25,7 @@ var JGBinder = (function(w,d,c,$){
     for(var i=0; i < all.length; ++i) { 
       if(!all[i].getAttribute('JGBound')) { 
         var bindType = false; 
-        var str = showStr = hideStr = ''; 
+        var str = showStr = hideStr = classStr = ''; 
 
         // first check if it is a JGBind or JGValue binding: 
         if(all[i].getAttribute('JGBind')) { 
@@ -35,8 +35,14 @@ var JGBinder = (function(w,d,c,$){
           bindType = 'value'; 
           str = all[i].getAttribute('JGValue'); 
         } 
-        // showStr = (all[i].getAttribute('JGShow')) ? all[i].getAttribute('JGShow') : false; 
-        // hideStr = (all[i].getAttribute('JGHide')) ? all[i].getAttribute('JGHide') : false; 
+        
+        if(all[i].getAttribute('JGClass')) { 
+          classStr = all[i].getAttribute('JGClass').split(',');
+          var classConditions = { }; 
+          for(var i=0; i < classStr.length; ++i) { 
+
+          }
+        }
 
         if(bindType) { 
           all[i].setAttribute('JGBound','true'); 
@@ -53,24 +59,6 @@ var JGBinder = (function(w,d,c,$){
             type: bindType
           }); 
         }
-        // if(showStr) { 
-        //   showStr = showStr.split('.'); 
-        //   var objname = showStr.shift(); 
-        //   state.boundelems[objname].push({
-        //     el: all[i], 
-        //     key: showStr.join('.'), 
-        //     type: 'show' 
-        //   }); 
-        // } 
-        // if(hideStr) { 
-        //   hideStr = hideStr.split('.'); 
-        //   var objname = hideStr.shift(); 
-        //   state.boundelems[objname].push({
-        //     el: all[i], 
-        //     key: hideStr.join('.'), 
-        //     type: 'hide' 
-        //   }); 
-        // }
       }
     }
     state.domCollected = true; 
