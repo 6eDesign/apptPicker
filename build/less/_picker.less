@@ -1,3 +1,94 @@
+*, *:before, *:after {
+  -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box;
+}
+
+/* ADDING SOME STUFF FOR CALENDAR VIEW BRANCH */
+.jCal { 
+  .jCalRow.row { 
+    overflow: auto;
+    width: 100%;
+    position: relative;
+    float: left;
+    &:hover { 
+      cursor: pointer; 
+      .col.jCalCell { 
+        .innerCell { 
+          background: blue; 
+        }
+      }
+      .col.jCallCell.empty { 
+        .innerCell { 
+          background-color: #C4C4C4; 
+        }
+      }
+    }
+    .col.jCalCell { 
+      border-right: 1px solid black; 
+      border-bottom: 1px solid black; 
+      width:  14.2857%; // 1/7 * 100%
+      position: relative; 
+      margin: 0; 
+      padding: 0; 
+      overflow: hidden; 
+      &:first-child { 
+        border-left: 1px solid black; 
+      }
+      img.squaringImage { 
+        opacity: 0; 
+      }
+      .innerCell { 
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #FCFCFC;
+      }
+    }
+    .col.jCalCell.empty { 
+      .innerCell { 
+        background-color: #C4C4C4; 
+      }
+    }
+  }
+  .row.jCalHeader {
+    font-size: 0.9em; 
+    @media only screen and (min-width: 480px) { 
+      font-size: 1.1em; 
+    }
+    @media only screen and (min-width : 768px) { 
+      font-size: 1.4em; 
+    }
+    border-bottom: 1px solid black;  
+    .col.jCalBtn { 
+      .no-select; 
+      text-align: center; 
+      font-weight: bold; 
+      width: 20%; 
+      border: 1px solid black; 
+      margin: 0; 
+      padding: 0; 
+      &:hover { 
+        cursor: pointer; 
+      }
+    }
+    .col.jCalLabel { 
+      font-weight: bold; 
+      text-align: center; 
+      margin: 0; 
+      padding: 0; 
+      width: 60%; 
+      .month { 
+        &:after { 
+          content: ', ';
+        }
+      }
+    }
+  }
+}
+
+/* ORIGINAL _picker.less FILE */
+
 .appt-picker-button { 
   position: absolute;    
   z-index:3;

@@ -2,20 +2,36 @@
 <html>
 <head>
 	<title>Advanced Appt Picker</title>
+	<link rel="stylesheet" href="dist/css/style.min.css">
 </head>
 <body>
-
+	<div class="container" style="width: 70%; margin: 0 auto;">
+		<div id="calendar"></div>
+	</div>
 </body>
 
 <script type="text/javascript" src="build/js/jDom.js"></script>
 <script type="text/javascript" src="build/js/jDom.interpret.js"></script>
+<script type="text/javascript" src="build/js/JGBind.js"></script>
 <script type="text/javascript" src="build/js/apptPickerAdvanced.js"></script>
 <script type="text/javascript" src="build/js/time.js"></script>
 <script type="text/javascript">
 	var testing = (function(w,d,c,$){
-		var init; 
+		var calendarId, init, swapCalendar, month = 6, year = 2014; 
+		swapCalendar = function() { 
+			if(month < 12) {
+				++month; 
+			} else {
+				++year; 
+				month = 1; 
+			} 
+			c.log("MONTH: " + month + " & YEAR: " + year); 
+			calendar.setMonth(calendarId,month,year); 
+			window.setTimeout(swapCalendar,1000); 
+		}; 
 		init = function() { 
-			time.getMonth(6,2014); 
+			calendarId = calendar.generateCalendar('calendar', month, year); 
+			// window.setTimeout(swapCalendar,1000)
 		}; 
 		$.ready(init); 
 	})(window,document,console,jDom); 
