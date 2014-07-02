@@ -10,14 +10,39 @@ var calendar = (function(w,d,c,D,$,exports){
 	dayspermonth = [31,28,31,30,31,30,31,31,30,31,30,31]; 
 	labels.months = ["January","February","March","April","May","June","July","August","September","October","November","December"];  
 	labels.days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]; 
+
 	// setup our basedays templates: 
 	for(var i=0; i < 35; ++i) { 
 		basedayskeys.push('day_'+(i+1)); 
 		basedays['day_'+(i+1)] = {}; 
 	}
 
+	/* Setup our JGClass handlers: */
+	var cellDateHandler; 
+	cellDateHandler = function(val) { 
+		var obj = { add: '', remove: '' }; 
+		if(val != null) { 
+			obj.remove = 'empty'; 
+		} else { 
+			obj.add = 'empty'; 
+		}
+		return obj; 
+	}; 
+
+	JGBinder.registerClassHandler('cellDateHandler',cellDateHandler); 
+
 	// functions: 
-	var generateMonth, getMonth, setMonth, padMonth, getDaysInMonth, getWeeksInMonth, applyDaysTo, addMonth, subtractMonth;
+	var generateMonth, getMonth, setMonth, updateSchedule, padMonth, getDaysInMonth, getWeeksInMonth, applyDaysTo, addMonth, subtractMonth, fixlength;
+	fixlength = function(num,digits) { 
+	  num = num.toString(); 
+	  if(num.length < digits) { 
+	    var add = ""; 
+	    for(var i=0; i < digits-num.length; ++i) { 
+	      add = "0" + add; 
+	    }
+	    return add + num; 
+	  }
+	}
 	addMonth = function() { 
 		var id, month, year; 
 		id = this.getAttribute('data-jcalid'); 
@@ -78,6 +103,7 @@ var calendar = (function(w,d,c,D,$,exports){
 		for(var i = 0; i < 5; ++i) { 
 			var row = { type: 'a', attributes: { 'class': 'row jCalRow' }, contains: []}; 
 			for(var j = 0; j < 7; ++j) { 
+				var currday = (i*7)+j+1; 
 				row.contains.push({
 					type: 'div', 
 					attributes: { 'class': 'col jCalCell' }, 
@@ -87,12 +113,20 @@ var calendar = (function(w,d,c,D,$,exports){
 							attributes: { src: 'dist/img/square.png', 'class': 'squaringImage', width: '100%', height: 'auto' }
 						}, { 
 							type: 'div', 
-							attributes: { 'class': 'innerCell' }, 
+							attributes: { 'class': 'innerCell', 'JGClass': 'cellDateHandler:'+id+'.days.day_'+currday+'.day' }, 
 							contains: [
 								{ 
 									type: 'span', 
 									attributes: { 
-										'JGBind': id+'.days.day_'+(((i*7) + j+1)+'.day') 
+										'class': 'dayLabel',
+										'JGBind': id+'.days.day_'+currday+'.day' 
+									}
+								},{ 
+									type: 'div', 
+									attributes: { 
+										'class': 'availabilityLabel', 
+										'JGBind': id+'.days.day_'+currday+'.scheduleDescription'
+										// 'JGBind': 
 									}
 								}
 							]
@@ -105,6 +139,12 @@ var calendar = (function(w,d,c,D,$,exports){
 		state.calendars[id] = { }; 
 		state.calendars[id].el = elem.appendChild($.create(calendar)); 
 		state.calendars[id].days = $.extend({},basedays); 
+		state.calendars[id].currday = { 
+			day: today.getDay()+1, 
+			month: today.getMonth()+1, 
+			year: today.getYear()
+		}; 
+		state.calendars[id].schedule = { }; 
 		++state.count;  
 		return id; 
 	}; 
@@ -133,17 +173,27 @@ var calendar = (function(w,d,c,D,$,exports){
 		for(var i=0; i < numDays; ++i) { 
 			days.push(new Date(year,month,i+1)); 
 		}	
-		c.log(numDays); 
 		return days;  
 	}; 
 
 	applyDaysTo = function(id,days) { 
 		var startingNull = 0; 
+		c.log(state.calendars[id]); 
 		for(var i=0; i < days.length; ++i) { 
 			startingNull += (days[i]) ? 0 : 1; 
+			var schedule = []; 
+			if(days[i]) {
+				var key = days[i].getFullYear() + "_" + fixlength(days[i].getMonth()+1,2) + "_" + fixlength(i+1-startingNull,2); 
+				c.log(days[i], key); 
+				if(typeof state.calendars[id].schedule[key] != 'undefined') { 
+					c.log("FOUND SCHEDULE"); 
+					schedule = state.calendars[id].schedule[key];
+				}
+			}
 			state.calendars[id].days['day_'+(i+1)] = { 
 				day: (days[i]) ? i+1-startingNull : days[i], 
-				date: days[i]
+				date: days[i], 
+				schedule: schedule
 			}; 
 		}
 		JGBinder.reload(); 
@@ -162,12 +212,23 @@ var calendar = (function(w,d,c,D,$,exports){
 		state.calendars[id].monthLabel = labels.months[month]; 
 		state.calendars[id].monthLabelAbbr = labels.months[month].substring(0,3); 
 		state.calendars[id].year = year; 
+		state.calendars[id].currday.month = month+1; 
+		state.calendars[id].currday.year = year; 
 		applyDaysTo(id,days);
 	}; 
 
-	exports.generateCalendar = function(id,month,year) { 
+	updateSchedule = function(id,schedule) { 
+		state.calendars[id].schedule = $.extend(state.calendars[id].schedule,schedule); 
+		setMonth(id,state.calendars[id].currday.month,state.calendars[id].currday.year);
+	}; 
+
+	exports.generateCalendar = function(id,month,year,schedule) { 
+		schedule = (typeof schedule == 'undefined') ? false : schedule; 
 		var calendarId = generateMonth(d.getElementById(id)); 
-		setMonth(calendarId,month,year); 		 
+		setMonth(calendarId,month,year); 
+		if(schedule) { 
+			updateSchedule(calendarId,schedule); 
+		}	 
 		return calendarId; 	
 	}
 
@@ -177,6 +238,28 @@ var calendar = (function(w,d,c,D,$,exports){
 		}
 	}; 
 
+	exports.updateSchedule = function(id,schedule) { 
+		updateSchedule(id,schedule); 
+		return true; 
+	}; 
+
 	return exports; 
 
 })(window,document,console,Date,jDom,calendar||{}); 
+
+
+
+
+/*
+	Thoughts on storing a schedule in JSON: 
+		schedule = { 
+			date_string: minutes_array
+		}
+		where: 
+			date_string: 		"YYYY_MM_DD" (ex: "2015_07_01")
+			minutes_array: 	an array (of length%2=0, even) of integers .  Each pair 
+											of integers represents the start and end time of an appt.
+											in minutes from 12:00am
+
+
+ */
