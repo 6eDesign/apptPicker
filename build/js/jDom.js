@@ -34,6 +34,8 @@ var jDom = (function(exports,w,d,c){
             -jDom.setData(elem,newData,overwrite)
             -jDom.addClass(elem,classes) 
                 classes is space separated string
+            -jDom.removeData(elem,data)
+                data is an object sans 'data-' prefixes as keys
             -jDom.removeClass(elem,classes) 
                 elem is an array of elements or a single element
                 classes is space separated string
@@ -124,14 +126,20 @@ var jDom = (function(exports,w,d,c){
         var data = getData(elem); 
         return data; 
     };
+    exports.removeData = function(elem,data) { 
+        removeData(elem,data); 
+        return elem; 
+    }; 
     exports.setData = function(elem,newData,overwrite) {
         overwrite = (typeof overwrite == 'undefined') ? false : true; 
         if(overwrite ) { 
-            c.log("WRITE THIS METHOD"); 
+            overwriteData(elem,data); 
         } else { 
             var data = extend(getData(elem),newData); 
+            c.log(newData); 
             setData(elem,data); 
         }
+        return elem; 
     };  
     exports.addClass = function(elem,classes) { 
         var currentClasses = ""; 
@@ -184,6 +192,8 @@ var jDom = (function(exports,w,d,c){
                 -removeClass(); 
                 -getData(); 
                 -setData(); 
+                -removeData(); 
+                -overwriteData()
     ================================================ */
 
 
@@ -341,7 +351,7 @@ var jDom = (function(exports,w,d,c){
     /*=========================================================
     |   4) DOM GETTERS/SETTERS:                               |
     ======================================================== */ 
-    var getByClassName, getElementsByData, getAttrs, removeClass, getData, setData;
+    var getByClassName, getElementsByData, getAttrs, removeClass, getData, setData, removeData, overwriteData;
     getByClassName = function(str,context) { 
         var candidates, foundElems = []; 
         candidates = context.getElementsByTagName('*'); 
@@ -419,7 +429,35 @@ var jDom = (function(exports,w,d,c){
         return data; 
     }; 
     setData = function(elem,data) { 
-        
+        var keys = getKeys(data); 
+        console.log("SETTING"); console.log(keys); 
+        for(var i=0; i < keys.length; ++i ) { 
+            elem.setAttribute('data-'+keys[i],data[keys[i]]); 
+        }
+        return true; 
+    }; 
+    removeData = function(elem,dataToDelete) { 
+        var currentData, deleteKeys = getKeys(dataToDelete); 
+        currentData = getData(elem); 
+        c.log("DELETING: "); c.log(deleteKeys); 
+        for(var i=0; i < deleteKeys.length; ++i) { 
+            if(typeof currentData[deleteKeys[i]] != 'undefined') { 
+                elem.removeAttribute('data-' + deleteKeys[i]); 
+            }
+        }
+        return true; 
+    }; 
+    overwriteData = function(elem,newData) { 
+        var currentData, keys; 
+        currentData = getData(elem); 
+        keys = getKeys(currentData); 
+        for(var i=0; i < keys.length; ++i) { 
+            if(typeof newData[keys[i]] == 'undefined') { 
+                elem.removeAttribute('data-'+keys[i]); 
+            }
+        }
+        setData(elem,newData); 
+        return true; 
     }; 
 
     // return our public functions: 

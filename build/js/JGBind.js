@@ -177,26 +177,29 @@ var JGBinder = (function(w,d,c,$){
       } 
       if(arr[i].type == 'JGClass' || arr[i].type == 'JGData') { 
         if(typeof state.handlers[arr[i].handle] != 'undefined') { 
-          switch(arr[i].type) { 
-            case 'JGClass': 
-              var instr = state.handlers[arr[i].handle](get(task.obj, arr[i].key)); 
-              if(typeof instr == 'object') { 
-                instr.add = (typeof instr.add == 'undefined') ? false : instr.add; 
-                instr.remove = (typeof instr.remove == 'undefined') ? false : instr.remove; 
-                if(instr.add) 
-                  $.addClass(arr[i].el,instr.add); 
-                if(instr.remove) 
-                  $.removeClass(arr[i].el,instr.remove); 
-              } else { c.log("IMPROPER JGClass USE."); } 
-              break; 
-            case 'JGData': 
-              c.log("JGDATA_Y"); 
-              break; 
-            default: 
-              break; 
+          var instr = state.handlers[arr[i].handle](get(task.obj, arr[i].key)); 
+          if(typeof instr == 'object') { 
+            instr.add = (typeof instr.add == 'undefined') ? false : instr.add; 
+            instr.remove = (typeof instr.remove == 'undefined') ? false : instr.remove; 
+            switch(arr[i].type) { 
+              case 'JGClass': 
+                  if(instr.add) 
+                    $.addClass(arr[i].el,instr.add); 
+                  if(instr.remove) 
+                    $.removeClass(arr[i].el,instr.remove); 
+                break; 
+              case 'JGData': 
+                if(instr.add) { 
+                  $.setData(arr[i].el,instr.add);
+                }
+                // if(instr.remove) 
+                //   $.removeData(arr[i].el,instr.remove); 
+                break; 
+              default: 
+                break; 
+            }
           }
         }
-
         // if(typeof state.handlers[])
       }
     } 

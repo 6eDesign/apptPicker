@@ -39,7 +39,11 @@ var calendar = (function(w,d,c,D,$,exports){
 		return obj; 
 	}; 
 	dayToTimestamp = function(val) { 
-		console.log(val); 
+		var obj = { add: {  } }; 
+		if(val.day) { 
+			obj.add.timestamp = val.date.getTime()
+		}
+		return obj; 
 	}; 
 
 	JGBinder.registerHandler('cellDateHandler',cellDateHandler); 
