@@ -16,8 +16,39 @@ var JGBinder = (function(w,d,c,$){
     originalObjects:    { }, 
     boundelems:         { },
     changeHandlers:     { }, 
-    classHandlers:      { }
+    handlers:      { }
   }
+
+    // switch(type) { 
+    //   case '': 
+
+    //     break; 
+    //   case '': 
+
+    //     break; 
+    //   default: 
+    //     break;
+    // }
+  var interpretHandler = function(elem,type) { 
+    var classStr = elem.getAttribute(type).split(','); 
+    for(var j = 0; j < classStr.length; ++j) { 
+      var handlename, objname, classobjkey, thisarr = classStr[j].split(':'); 
+      handlename = thisarr.shift(); 
+      thisarr = thisarr[0].split('.'); 
+      objname = thisarr.shift(); 
+      classobjkey = thisarr.join('.'); 
+      if(state.boundelems[objname] == 'undefined') { 
+        state.boundelems[objname] = []; 
+      }
+      state.boundelems[objname].push({
+        el: elem, 
+        key: classobjkey, 
+        type: type, 
+        handle: handlename
+      }); 
+      elem.setAttribute('JGBound','true'); 
+    }
+  }; 
 
   // get all the elements and find those w/ bindings: 
   var collectDOM = function() { 
@@ -41,7 +72,7 @@ var JGBinder = (function(w,d,c,$){
             <elem JGClass='someClassHandle:someObj.someProperty'></elem>
             also permits: 'handle1:someObj.prop1,handle2:someObj.prop2'
           Then: 
-            JGBinder.registerClassHandler('someClassHandle', cb)
+            JGBinder.registerHandler('someClassHandle', cb)
           Where: 
             cb = function(oldValue,newValue) { 
               // do some logic here & assign className = String
@@ -49,25 +80,11 @@ var JGBinder = (function(w,d,c,$){
             }
         */
         if(all[i].getAttribute('JGClass')) { 
-          var classStr = all[i].getAttribute('JGClass').split(','); 
-          for(var j = 0; j < classStr.length; ++j) { 
-            var handlename, objname, classobjkey, thisarr = classStr[j].split(':'); 
-            handlename = thisarr.shift(); 
-            thisarr = thisarr[0].split('.'); 
-            objname = thisarr.shift(); 
-            classobjkey = thisarr.join('.'); 
-            if(state.boundelems[objname] == 'undefined') { 
-              state.boundelems[objname] = []; 
-            }
-            state.boundelems[objname].push({
-              el: all[i], 
-              key: classobjkey, 
-              type: 'class', 
-              handle: handlename
-            }); 
-            all[i].setAttribute('JGBound','true'); 
-          }
+          interpretHandler(all[i],'JGClass'); 
         }       
+        if(all[i].getAttribute('JGData')) { 
+          interpretHandler(all[i],'JGData'); 
+        }
 
         if(bindType) { 
           all[i].setAttribute('JGBound','true'); 
@@ -158,20 +175,29 @@ var JGBinder = (function(w,d,c,$){
             break; 
         }
       } 
-      if(arr[i].type == 'class') { 
-        if(typeof state.classHandlers[arr[i].handle] != 'undefined') { 
-          var instr = state.classHandlers[arr[i].handle](get(task.obj, arr[i].key)); 
-          if(typeof instr == 'object') { 
-            instr.add = (typeof instr.add == 'undefined') ? false : instr.add; 
-            instr.remove = (typeof instr.remove == 'undefined') ? false : instr.remove; 
-            if(instr.add) 
-              $.addClass(arr[i].el,instr.add); 
-            if(instr.remove) 
-              $.removeClass(arr[i].el,instr.remove); 
-          } else { c.log("IMPROPER JGCLASS USE."); } 
+      if(arr[i].type == 'JGClass' || arr[i].type == 'JGData') { 
+        if(typeof state.handlers[arr[i].handle] != 'undefined') { 
+          switch(arr[i].type) { 
+            case 'JGClass': 
+              var instr = state.handlers[arr[i].handle](get(task.obj, arr[i].key)); 
+              if(typeof instr == 'object') { 
+                instr.add = (typeof instr.add == 'undefined') ? false : instr.add; 
+                instr.remove = (typeof instr.remove == 'undefined') ? false : instr.remove; 
+                if(instr.add) 
+                  $.addClass(arr[i].el,instr.add); 
+                if(instr.remove) 
+                  $.removeClass(arr[i].el,instr.remove); 
+              } else { c.log("IMPROPER JGClass USE."); } 
+              break; 
+            case 'JGData': 
+              c.log("JGDATA_Y"); 
+              break; 
+            default: 
+              break; 
+          }
         }
 
-        // if(typeof state.classHandlers[])
+        // if(typeof state.handlers[])
       }
     } 
   }; 
@@ -248,9 +274,9 @@ var JGBinder = (function(w,d,c,$){
       collectDOM(); 
       return true; 
     }, 
-    registerClassHandler: function(handlername,cb) { 
+    registerHandler: function(handlername,cb) { 
       if(typeof cb != 'undefined' && typeof cb == 'function') { 
-        state.classHandlers[handlername] = cb; 
+        state.handlers[handlername] = cb; 
         return true; 
       }
     }
@@ -264,7 +290,7 @@ var JGBinder = (function(w,d,c,$){
     revert: public.revert, 
     onChange: public.onChange, 
     reload: public.reload, 
-    registerClassHandler: public.registerClassHandler
+    registerHandler: public.registerHandler
   } 
 
 })(window,document,console,jDom); 

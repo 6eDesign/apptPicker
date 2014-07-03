@@ -18,30 +18,49 @@ var calendar = (function(w,d,c,D,$,exports){
 	}
 
 	/* Setup our JGClass handlers: */
-	var cellDateHandler; 
+	var cellDateHandler, dayToTimestamp; 
 	cellDateHandler = function(val) { 
 		var obj = { add: '', remove: '' }; 
-		if(val != null) { 
-			obj.remove = 'empty'; 
+
+		if(val.day != null) { 
+			obj.remove += 'empty'; 
 		} else { 
-			obj.add = 'empty'; 
+			obj.add += 'empty'; 
+		}
+		if(typeof val.schedule.available != 'undefined') { 
+			if(val.schedule.available == true) { 
+				obj.remove += ' unavailable';  
+			} else { 
+				obj.add += ' unavailable'; 
+			}
+		} else { 
+			obj.remove += ' unavailable'; 
 		}
 		return obj; 
 	}; 
+	dayToTimestamp = function(val) { 
+		console.log(val); 
+	}; 
 
-	JGBinder.registerClassHandler('cellDateHandler',cellDateHandler); 
+	JGBinder.registerHandler('cellDateHandler',cellDateHandler); 
+	JGBinder.registerHandler('dayToTimestamp',dayToTimestamp); 
 
 	// functions: 
-	var generateMonth, getMonth, setMonth, updateSchedule, padMonth, getDaysInMonth, getWeeksInMonth, applyDaysTo, addMonth, subtractMonth, fixlength;
+	var generateMonth, getMonth, setMonth, updateSchedule, padMonth, getDaysInMonth, getWeeksInMonth, applyDaysTo, addMonth, subtractMonth, fixlength, handleDayClick;
+	handleDayClick = function() { 
+		c.log("CLICKY CLICK"); 
+		c.log(this); 
+	}; 
+
 	fixlength = function(num,digits) { 
 	  num = num.toString(); 
+    var add = ""; 
 	  if(num.length < digits) { 
-	    var add = ""; 
 	    for(var i=0; i < digits-num.length; ++i) { 
 	      add = "0" + add; 
 	    }
-	    return add + num; 
 	  }
+    return add + num; 
 	}
 	addMonth = function() { 
 		var id, month, year; 
@@ -67,7 +86,27 @@ var calendar = (function(w,d,c,D,$,exports){
 		setMonth(id,month,year); 
 	};  
 	generateMonth = function(elem) { 
-		var calendar = {}, contains = [], id = 'calendar_' + state.count; 
+		var mainDiv = {}, calendar = {}, contains = [], id = 'calendar_' + state.count; 
+		mainDiv.type = 'div'; 
+		mainDiv.attributes = { 'class': 'theApptPicker' }; 
+		mainDiv.contains = []; 
+		mainDiv.contains.push({
+			type: 'div', 
+			attributes: {'class': 'apptPicker'}, 
+			contains: [
+				{
+					type: 'div', 
+					attributes: { 'JGBind': id+'.selectedDayLabel' }
+				},{
+					type: 'input', 
+					attributes: { type: 'hidden', readonly: 'true', id: 'pickerInput_'+id } 
+				},{
+					type: 'div', 
+					attributes: { 'id': 'picker_'+id }
+				}
+			]
+		}); 
+
 		calendar.type = 'div'; 
 		calendar.attributes = { 'class': 'jCal', id: id };
 		calendar.contains = []; 
@@ -100,20 +139,44 @@ var calendar = (function(w,d,c,D,$,exports){
 				}
 			]
 		}); 
+		var jCalDayLabels = { type: 'div', attributes: { 'class': 'row jCalDayLabels jCalRow' }, contains: [] }; 
+		for(var i=0; i < labels.days.length; ++i) { 
+			jCalDayLabels.contains.push({
+				type: 'div', 
+				attributes: { 'class': 'col jCalCell' }, 
+				contains: [	
+					{
+						type: 'div', 
+						attributes: { 'class': 'label' }, 
+						contains: labels.days[i]
+					}, { 
+						type: 'div', 
+						attributes: { 'class': 'label abbr' } , 
+						contains: labels.days[i].substring(0,3)
+					}
+				]
+			}); 
+		}	
+		calendar.contains.push(jCalDayLabels); 
 		for(var i = 0; i < 5; ++i) { 
 			var row = { type: 'a', attributes: { 'class': 'row jCalRow' }, contains: []}; 
 			for(var j = 0; j < 7; ++j) { 
 				var currday = (i*7)+j+1; 
 				row.contains.push({
 					type: 'div', 
-					attributes: { 'class': 'col jCalCell' }, 
+					attributes: { 'class': 'col jCalCell' },
 					contains: [ 
 						{ 
 							type: 'img', 
 							attributes: { src: 'dist/img/square.png', 'class': 'squaringImage', width: '100%', height: 'auto' }
 						}, { 
 							type: 'div', 
-							attributes: { 'class': 'innerCell', 'JGClass': 'cellDateHandler:'+id+'.days.day_'+currday+'.day' }, 
+							attributes: { 
+								'class': 'innerCell', 
+								'JGClass': 'cellDateHandler:'+id+'.days.day_'+currday, 
+								'JGData': 'dayToTimestamp:'+id+'.days.day_'+currday 
+							},  
+							bindings: { 'click': handleDayClick }, 
 							contains: [
 								{ 
 									type: 'span', 
@@ -124,10 +187,25 @@ var calendar = (function(w,d,c,D,$,exports){
 								},{ 
 									type: 'div', 
 									attributes: { 
-										'class': 'availabilityLabel', 
-										'JGBind': id+'.days.day_'+currday+'.scheduleDescription'
-										// 'JGBind': 
-									}
+										'class': 'availabilityLabel'
+
+										// 'JGBind': id+'.days.day_'+currday+'.schedule'
+									}, 
+									contains: [ 
+										{ 
+											type: 'div', 
+											attributes: { 
+												'class': 'description mobile', 
+												'JGBind': id+'.days.day_'+currday+'.schedule.description.mobile' 
+											}
+										}, { 
+											type: 'div', 
+											attributes: { 
+												'class': 'description', 
+												'JGBind': id+'.days.day_'+currday+'.schedule.description.desktop'
+											}
+										}
+									]
 								}
 							]
 						}
@@ -136,8 +214,20 @@ var calendar = (function(w,d,c,D,$,exports){
 			}
 			calendar.contains.push(row); 
 		}
+		mainDiv.contains.push(calendar); 
+
 		state.calendars[id] = { }; 
-		state.calendars[id].el = elem.appendChild($.create(calendar)); 
+		state.calendars[id].el = elem.appendChild($.create(mainDiv)); 
+
+		state.calendars[id].picker = apptPicker('picker_'+id).create({
+			start: '6:00am', 
+			end: '6:00pm', 
+			interval: 15, 
+			subinterval: 120, 
+			inputid: 'pickerInput_'+id
+		}); 
+		apptPicker('picker_'+id).toggleOpen(); 
+
 		state.calendars[id].days = $.extend({},basedays); 
 		state.calendars[id].currday = { 
 			day: today.getDay()+1, 
@@ -178,15 +268,12 @@ var calendar = (function(w,d,c,D,$,exports){
 
 	applyDaysTo = function(id,days) { 
 		var startingNull = 0; 
-		c.log(state.calendars[id]); 
 		for(var i=0; i < days.length; ++i) { 
 			startingNull += (days[i]) ? 0 : 1; 
-			var schedule = []; 
+			var schedule = {}; 
 			if(days[i]) {
 				var key = days[i].getFullYear() + "_" + fixlength(days[i].getMonth()+1,2) + "_" + fixlength(i+1-startingNull,2); 
-				c.log(days[i], key); 
 				if(typeof state.calendars[id].schedule[key] != 'undefined') { 
-					c.log("FOUND SCHEDULE"); 
 					schedule = state.calendars[id].schedule[key];
 				}
 			}
@@ -202,7 +289,7 @@ var calendar = (function(w,d,c,D,$,exports){
 	
 	setMonth = function(id,month,year) { 
 		month = (typeof month == 'undefined') ? today.getMonth() : month-1; 
-		year = (typeof year == 'undefined') ? today.getYear() : year; 
+		year = (typeof year == 'undefined') ? today.getFullYear() : year; 
 		var days, numWeeks, padding = []; 
 		days = getMonth(month,year);
 		padding[0] = days[0].getDay(); 
@@ -224,7 +311,9 @@ var calendar = (function(w,d,c,D,$,exports){
 
 	exports.generateCalendar = function(id,month,year,schedule) { 
 		schedule = (typeof schedule == 'undefined') ? false : schedule; 
-		var calendarId = generateMonth(d.getElementById(id)); 
+		var calendarId, target = d.getElementById(id); 
+		calendarId = generateMonth(target); 
+		target.style.position = "relative"; 
 		setMonth(calendarId,month,year); 
 		if(schedule) { 
 			updateSchedule(calendarId,schedule); 

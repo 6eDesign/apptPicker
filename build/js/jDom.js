@@ -120,16 +120,18 @@ var jDom = (function(exports,w,d,c){
         return getElementsByData(key,val,context,type); 
     }; 
     exports.getData = function(elem) { 
-        var attrs, keys, data = { }; 
-        attrs = getAttrs(elem); 
-        keys = getKeys(attrs); 
-        for(var i=0; i < keys.length; ++i) { 
-            if(keys[i].indexOf('data-') == 0) { 
-                data[keys[i].substring(5,keys[i].length)] = attrs[keys[i]]; 
-            }
-        }
+        var data = getData(elem); 
         return data; 
-    }; 
+    };
+    exports.setData = function(elem,newData,overwrite) {
+        overwrite = (typeof overwrite == 'undefined') ? false : true; 
+        if(overwrite ) { 
+            c.log("WRITE THIS METHOD"); 
+        } else { 
+            var data = extend(getData(elem),newData); 
+            c.log("FINISH WRITING THIS METHOD"); 
+        }
+    };  
     exports.addClass = function(elem,classes) { 
         var currentClasses = ""; 
         if(typeof elem.className != 'undefined') { 
@@ -179,6 +181,7 @@ var jDom = (function(exports,w,d,c){
                 -getElementsByData()
                 -getAttrs()
                 -removeClass(); 
+                -getData(); 
     ================================================ */
 
 
@@ -336,7 +339,7 @@ var jDom = (function(exports,w,d,c){
     /*=========================================================
     |   4) DOM GETTERS/SETTERS:                               |
     ======================================================== */ 
-    var getByClassName, getElementsByData, getAttrs, removeClass;
+    var getByClassName, getElementsByData, getAttrs, removeClass, getData;
     getByClassName = function(str,context) { 
         var candidates, foundElems = []; 
         candidates = context.getElementsByTagName('*'); 
@@ -402,6 +405,17 @@ var jDom = (function(exports,w,d,c){
         }
         return elem; 
     }
+    getData = function(elem) { 
+        var attrs, keys, data = { }; 
+        attrs = getAttrs(elem); 
+        keys = getKeys(attrs); 
+        for(var i=0; i < keys.length; ++i) { 
+            if(keys[i].indexOf('data-') == 0) { 
+                data[keys[i].substring(5,keys[i].length)] = attrs[keys[i]]; 
+            }
+        }
+        return data; 
+    }; 
 
     // return our public functions: 
     return exports; 

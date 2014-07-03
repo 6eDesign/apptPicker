@@ -9,11 +9,11 @@
 		<div id="calendar"></div>
 	</div>
 </body>
-
+<script type="text/javascript" src="build/js/timeUtils.js"></script>
 <script type="text/javascript" src="build/js/jDom.js"></script>
 <script type="text/javascript" src="build/js/jDom.interpret.js"></script>
 <script type="text/javascript" src="build/js/JGBind.js"></script>
-<script type="text/javascript" src="build/js/apptPickerAdvanced.js"></script>
+<script type="text/javascript" src="build/js/apptPicker.js"></script>
 <script type="text/javascript" src="build/js/time.js"></script>
 <script type="text/javascript">
 	var testing = (function(w,d,c,$){
@@ -25,13 +25,42 @@
 				++year; 
 				month = 1; 
 			} 
-			c.log("MONTH: " + month + " & YEAR: " + year); 
 			calendar.setMonth(calendarId,month,year); 
 			window.setTimeout(swapCalendar,1000); 
 		}; 
 		init = function() { 
-			calendarId = calendar.generateCalendar('calendar', month, year); 
+			calendarId = calendar.generateCalendar('calendar'); // w/o settings month,year params,defaults to this month
 			// window.setTimeout(swapCalendar,1000)
+			// 
+			var schedule = {}; 
+			var strings = [ 
+				'not available', 'blacked out', 'available', 'limited availability', 
+				'not available', 'blacked out', 'available', 'limited availability', 
+				'not available', 'blacked out', 'available', 'limited availability', 
+				'not available', 'blacked out', 'available', 'limited availability', 
+				'not available', 'blacked out', 'available', 'limited availability', 
+				'not available', 'blacked out', 'available', 'limited availability', 
+				'not available', 'blacked out', 'available', 'limited availability', 
+				'not available', 'blacked out', 'available', 'limited availability', 
+				'<img src="http://4.bp.blogspot.com/-fYJrkNWec08/T9EYOmNGPNI/AAAAAAAAC04/UtdRRM8a3hc/s640/cat-fat-dancing-cat-gif.gif" width="100%" />'
+			]; 
+			var generateSchedules = function(year) { 
+			 for(var i = 0; i < 12; ++i) { 
+			  for(var j = 0; j < 30; ++j ) { 
+			    var month = Math.ceil(Math.random() * 12); 
+			    var day = Math.ceil(Math.random() * 30);
+			    var available = (Math.random() > 0.5) ? true : false; 
+			    var description = { mobile: strings[Math.ceil(strings.length*Math.random())], desktop: strings[Math.ceil(strings.length*Math.random())] }; 
+			    month = (month.toString().length > 1) ? month : '0'+month.toString(); 
+			    day = (day.toString().length > 1) ? day : '0'+day.toString(); 
+			    schedule[year+'_'+month+'_'+day] = { available: available, description: description } 
+			  } 
+			 }
+			}
+			for(var i=-4; i < 5; ++i) { 
+			  generateSchedules(2014+i); 
+			} 
+			calendar.updateSchedule(calendarId,schedule)
 		}; 
 		$.ready(init); 
 	})(window,document,console,jDom); 

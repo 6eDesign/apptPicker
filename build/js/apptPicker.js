@@ -282,7 +282,7 @@ var theApptPicker = (function(w,d,c){
 
     /* Public Methods: */
     w.apptPicker = function(id) { 
-        var on, create, getTimes, expand, el, pickerid; 
+        var on, create, getTimes, expand, el, pickerid = false; 
         el = d.getElementById(id); 
         pickerid = el.getAttribute('data-pickerid'); 
         
