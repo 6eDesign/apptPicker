@@ -31,6 +31,7 @@ var jDom = (function(exports,w,d,c){
                 context is an element (not required) 
             -jDom.getElementsByData(key,val,context,type);
             -jDom.getData(elem)
+            -jDom.setData(elem,newData,overwrite)
             -jDom.addClass(elem,classes) 
                 classes is space separated string
             -jDom.removeClass(elem,classes) 
@@ -129,7 +130,7 @@ var jDom = (function(exports,w,d,c){
             c.log("WRITE THIS METHOD"); 
         } else { 
             var data = extend(getData(elem),newData); 
-            c.log("FINISH WRITING THIS METHOD"); 
+            setData(elem,data); 
         }
     };  
     exports.addClass = function(elem,classes) { 
@@ -182,6 +183,7 @@ var jDom = (function(exports,w,d,c){
                 -getAttrs()
                 -removeClass(); 
                 -getData(); 
+                -setData(); 
     ================================================ */
 
 
@@ -339,7 +341,7 @@ var jDom = (function(exports,w,d,c){
     /*=========================================================
     |   4) DOM GETTERS/SETTERS:                               |
     ======================================================== */ 
-    var getByClassName, getElementsByData, getAttrs, removeClass, getData;
+    var getByClassName, getElementsByData, getAttrs, removeClass, getData, setData;
     getByClassName = function(str,context) { 
         var candidates, foundElems = []; 
         candidates = context.getElementsByTagName('*'); 
@@ -415,6 +417,9 @@ var jDom = (function(exports,w,d,c){
             }
         }
         return data; 
+    }; 
+    setData = function(elem,data) { 
+        
     }; 
 
     // return our public functions: 
