@@ -135,8 +135,7 @@ var jDom = (function(exports,w,d,c){
         if(overwrite ) { 
             overwriteData(elem,data); 
         } else { 
-            var data = extend(getData(elem),newData); 
-            c.log(newData); 
+            var data = jDom.extend(getData(elem),newData); 
             setData(elem,data); 
         }
         return elem; 
@@ -430,7 +429,6 @@ var jDom = (function(exports,w,d,c){
     }; 
     setData = function(elem,data) { 
         var keys = getKeys(data); 
-        console.log("SETTING"); console.log(keys); 
         for(var i=0; i < keys.length; ++i ) { 
             elem.setAttribute('data-'+keys[i],data[keys[i]]); 
         }
@@ -439,7 +437,6 @@ var jDom = (function(exports,w,d,c){
     removeData = function(elem,dataToDelete) { 
         var currentData, deleteKeys = getKeys(dataToDelete); 
         currentData = getData(elem); 
-        c.log("DELETING: "); c.log(deleteKeys); 
         for(var i=0; i < deleteKeys.length; ++i) { 
             if(typeof currentData[deleteKeys[i]] != 'undefined') { 
                 elem.removeAttribute('data-' + deleteKeys[i]); 

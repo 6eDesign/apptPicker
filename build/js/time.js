@@ -50,10 +50,17 @@ var calendar = (function(w,d,c,D,$,exports){
 	JGBinder.registerHandler('dayToTimestamp',dayToTimestamp); 
 
 	// functions: 
-	var generateMonth, getMonth, setMonth, updateSchedule, padMonth, getDaysInMonth, getWeeksInMonth, applyDaysTo, addMonth, subtractMonth, fixlength, handleDayClick;
+	var generateMonth, getMonth, setMonth, updateSchedule, padMonth, getDaysInMonth, getWeeksInMonth, applyDaysTo, addMonth, subtractMonth, fixlength, handleDayClick, openPicker;
 	handleDayClick = function() { 
-		c.log("CLICKY CLICK"); 
-		c.log(this); 
+		var id, date; 
+		id = this.parentNode.parentNode.parentNode.getAttribute('id'); 
+		date = new D(parseInt(this.getAttribute('data-timestamp'))); 
+		openPicker(id,date); 
+	};
+
+	openPicker = function(id,date) { 
+		c.log("OPEN " + id);
+		c.log(date);  
 	}; 
 
 	fixlength = function(num,digits) { 
